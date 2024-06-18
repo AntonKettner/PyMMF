@@ -1,45 +1,51 @@
-# PyMMF
-python micromagnetic framework by Roke
-Uses a PyCUDA framework to simulate 
+markdown
+# PyMMF: Python Micromagnetic Framework by Roke
 
-port of afs ssh repo to git repo
+Uses a PyCUDA framework to simulate.
 
-is currently being tested on Ubuntu 18.04
-with:
+Port of AFS SSH repo to Git repo. Currently being tested on Ubuntu 18.04 with:
 
-requirements:
-cuda 11.8.0
-anaconda3/2023.03
-ffmpeg/4.0.2
-texlive/2022
+## Requirements
+- cuda 11.8.0
+- anaconda3/2023.03
+- ffmpeg/4.0.2
+- texlive/2022
 
+## Getting Started
 
+1. Install requirements
+2. Create conda environment with necessary repositories (quite a lot)
+3. Activate repository
+4. Run the simulation
+    - Use `python skyrmion_simulation.py` via Python
+    - Navigate to the script directory with `cd skyrmion_simulation/python_scripts`
+    - Output is provided via console and into the `OUTPUT` directory
 
-GET RUNNING:
-1.: install requirements
-2.: create conda env with necessary repos (quiet a lot)
-3.: activate repo
-4.: run with "python skyrmion_simulation.py" via python (after "cd skyrmion_simulation/python_scripts") -> Output is via console and into OUTPUT dir
-5.: modify masks (black and white pixels, easy via paint i.e.) and input skyrmions in needed_files and rerun with your own specifications
-    most parameters can be found inside the class definitions and inits in skyrmion_simulation.py
-    several standard modes are available: sim.sim_type -> the specific parameters modified can be found in spin class init
+5. Modify masks  
+    - Modify black and white pixel masks (easily done via paint or similar applications)
+    - Input Skyrmions in `needed_files` and rerun with your own specifications
 
+Most parameters can be found inside the class definitions and `__init__` methods in `skyrmion_simulation.py`.
 
+Several Standard Modes are Available
+`sim.sim_type` -> The specific parameters modified can be found in the spin class `__init__`.
 
-DYNAMIC CURRENT CALCULATION + VISUALIZATION:
-Steps 1.2.3. like for Skyrmion Simulation
-run with python current_calculation.py after cd current_calculation
+## Dynamic Current Calculation & Visualization
 
+1. Follow steps 1, 2, and 3 as for Skyrmion Simulation
+2. Run with `python current_calculation.py` after navigating to the directory with `cd current_calculation`.
 
-FOR PHYSNET UHH USERS:
+## For PhysNet UHH Users
 
-SKIP THE INSTALL REQUIREMENTS AND RUN VIA SS_PHYSNET.SH
-ss_physnet.sh starts skyrmion simulation with necessary modules -> can be used for jobs, configure with email address (and your own log dir)
-cc_physnet.sh starts current calculation with necessary modules -> can be used for jobs, configure with email address (and your own log dir)
+Skip the install requirements and run via `ss_physnet.sh`.
 
+- `ss_physnet.sh` starts the skyrmion simulation with necessary modules (can be used for jobs; configure with your email address and log directory)
+- `cc_physnet.sh` starts the current calculation with necessary modules (can be used for jobs; configure with your email address and log directory)
 
-TODO (For me):
-Implement temp dirs cleverly into main calculations -> Skyrmion simulation and Current Calculation
-functionalize more of the code inside the analysis scripts
-(split skyrmion simulation up into different parts)
-achieve support for windows -> paths with os.path or different module# PyMMF
+## To Do (For Me)
+
+- Implement temporary directories cleverly into main calculations:
+    - Skyrmion simulation
+    - Current Calculation
+- Functionalize more of the code inside the analysis scripts (split skyrmion simulation into different parts)
+- Achieve support for Windows (manage paths with `os.path` or a different module)
