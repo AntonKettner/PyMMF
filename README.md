@@ -1,4 +1,3 @@
-markdown
 # PyMMF: Python Micromagnetic Framework by Roke
 
 Uses a PyCUDA framework to simulate.
