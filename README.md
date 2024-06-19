@@ -11,10 +11,11 @@ Port of AFS SSH repo to Git repo. Currently being tested on Ubuntu 18.04 with:
 - texlive/2022
 
 ## For PhysNet UHH Users
-for testing use graphix01 node, more info at https://wolke.physnet.uni-hamburg.de/index.php/s/6ZgJfXGixe3z4zx?dir=undefined&openfile=71977770
-
 Skip the installation requirements (1. in getting started) and run `bash load_modules.sh` before every session.
 
+for testing use graphix01 node, more info at https://wolke.physnet.uni-hamburg.de/index.php/s/6ZgJfXGixe3z4zx?dir=undefined&openfile=71977770
+
+for longer simulations use i.e. `qsub ss_physnet.sh` -> more info at documentation
 - `ss_physnet.sh` starts the skyrmion simulation with necessary modules (can be used for jobs; configure with your email address and log directory)
 - `cc_physnet.sh` starts the current calculation with necessary modules (can be used for jobs; configure with your email address and log directory)
 
