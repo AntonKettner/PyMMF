@@ -1,6 +1,7 @@
 # PyMMF: Python Micromagnetic Framework by Roke
+Version 0.01
 
-Uses a PyCUDA framework to simulate.
+Uses PyCUDA to simulate a magnetic surface on an atomic scale iterating over the LLG equation.
 
 Port of AFS SSH repo to Git repo. Currently being tested on Ubuntu 18.04 with:
 
@@ -33,10 +34,12 @@ for longer simulations use i.e. `qsub ss_physnet.sh` -> more info at documentati
     - Output is provided via console and into the `OUTPUT` directory
 
 6. Modify masks and Parameters
-    - Modify black and white pixel masks (easily done via paint or similar applications)
+    - Modify Simulated area which is defined by a png with white/black pixels. (easily done via paint or similar applications)
     - Input Skyrmions and masks and in `needed_files` and rerun with your own specifications
       -> Most parameters can be found inside the class definitions and `__init__` methods in `skyrmion_simulation.py`.
+    - Micromagnetic constants or atomistic exchange energy values for Exchange, DM, Anisotropy, ext. B-field can be set.
 
+For micromagnetic simulation choose -> a as the width/length of a square, 
 Several Standard Modes are Available
 `sim.sim_type` -> The specific parameters modified can be found in the spin class `__init__`.
 
