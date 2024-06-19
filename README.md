@@ -10,11 +10,19 @@ Port of AFS SSH repo to Git repo. Currently being tested on Ubuntu 18.04 with:
 - ffmpeg/4.0.2
 - texlive/2022
 
+## For PhysNet UHH Users
+for testing use graphix01 node, more info at https://wolke.physnet.uni-hamburg.de/index.php/s/6ZgJfXGixe3z4zx?dir=undefined&openfile=71977770
+
+Skip the installation requirements (1. in getting started) and run `bash load_modules.sh` before every session.
+
+- `ss_physnet.sh` starts the skyrmion simulation with necessary modules (can be used for jobs; configure with your email address and log directory)
+- `cc_physnet.sh` starts the current calculation with necessary modules (can be used for jobs; configure with your email address and log directory)
+
 ## Getting Started
 
 1. Install requirements
-2. Create conda environment with necessary repositories (quite a lot)
-3. Activate repository
+2. Create conda environment with necessary repositories (quite a lot) using `conda env create conda_env_PyMMF.yml`
+3. Activate enviroment using `conda activate PyMMF`
 4. Run the simulation
     - Use `python skyrmion_simulation.py` via Python
     - Navigate to the script directory with `cd skyrmion_simulation/python_scripts`
@@ -33,13 +41,6 @@ Several Standard Modes are Available
 
 1. Follow steps 1, 2, and 3 as for Skyrmion Simulation
 2. Run with `python current_calculation.py` after navigating to the directory with `cd current_calculation`.
-
-## For PhysNet UHH Users
-
-Skip the install requirements and run via `ss_physnet.sh`.
-
-- `ss_physnet.sh` starts the skyrmion simulation with necessary modules (can be used for jobs; configure with your email address and log directory)
-- `cc_physnet.sh` starts the current calculation with necessary modules (can be used for jobs; configure with your email address and log directory)
 
 ## To Do (For Me)
 
