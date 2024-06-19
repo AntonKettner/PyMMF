@@ -23,13 +23,16 @@ for longer simulations use i.e. `qsub ss_physnet.sh` -> more info at documentati
 
 1. Install requirements
 2. Create conda environment with necessary repositories (quite a lot) using `conda env create --file conda_env_PyMMF.yml`
-3. Activate enviroment using `conda activate PyMMF`
-4. Run the simulation
+3. Activate enviroment using
+   - `conda init`
+   - `exec $SHELL`
+   - `conda activate PyMMF_env`
+5. Run the simulation
     - Navigate to the script directory with `cd skyrmion_simulation/python_scripts`
     - execute a test simulation `python skyrmion_simulation.py` via Python
     - Output is provided via console and into the `OUTPUT` directory
 
-5. Modify masks and Parameters
+6. Modify masks and Parameters
     - Modify black and white pixel masks (easily done via paint or similar applications)
     - Input Skyrmions and masks and in `needed_files` and rerun with your own specifications
       -> Most parameters can be found inside the class definitions and `__init__` methods in `skyrmion_simulation.py`.
