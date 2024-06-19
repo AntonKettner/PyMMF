@@ -34,7 +34,7 @@ module load anaconda3/2023.03
 module load texlive/2022
 module load ffmpeg/4.0.2
 module load cuda/11.8.0
-conda activate PyMMF
+conda activate PyMMF_env
 echo -e "all modules purged, anaconda loaded, Anaconda Enviroment $(conda info --envs | grep "*" | cut -d " " -f 1) activated"
 echo "current directory:"
 echo $PWD
