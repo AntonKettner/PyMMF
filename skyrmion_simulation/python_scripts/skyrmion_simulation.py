@@ -324,9 +324,9 @@ class cst:
     # with spin_volume_density = spins per unit cell / volume of unit cell
     # A/m in eV/T --> M_s / spin_volume_density / el_charge
 
-    # ---------------Urspruenglich so ueber mu_s berechnet, aber das ist falsch------------------
+    # ---------------Urspruenglich so ueber mu_s berechnet -> wird nun überschrieben quadr oder hex------------------
 
-    mu_spin = M_s * ((a / n) ** 3) / e  #! das hier sollte auch anders sein
+    mu_spin = M_s * ((a / n) ** 3) / e
 
     # J/m in T --> J_0 / spin_line_density / el_charge / mu_s
     A_Field = A_density * (a / n) / e / mu_spin  # / 3 --> for hexagonal lattice
@@ -369,47 +369,47 @@ class cst:
 
     E_k_hex = K_density * mu_s / M_s
 
-    # -------------second try ich meine alles falsch ab hier-----------------------
+    # -------------old stuff-----------------------
 
     # ab hier zweiter Versuch
 
-    # energy constants by conversion formulae for hexagonal lattice
-    d = DM_density * a**2 * 2 ** (1 / 2) / 3 / e
+    # # energy constants by conversion formulae for hexagonal lattice
+    # d = DM_density * a**2 * 2 ** (1 / 2) / 3 / e
 
-    # d for alt conversion (2D)
-    d_2d = DM_density * a**2 / (2 ** (1 / 2) * 3) / e
-    # d_2d = 1.52e-3  # Hagemeister 2018 atomistic values
+    # # d for alt conversion (2D)
+    # d_2d = DM_density * a**2 / (2 ** (1 / 2) * 3) / e
+    # # d_2d = 1.52e-3  # Hagemeister 2018 atomistic values
 
-    d_2d_field = d_2d / mu_free_spin
+    # d_2d_field = d_2d / mu_free_spin
 
-    # alt conversion of A (2D)
-    a_2d = A_density * a * (2 ** (1 / 2)) / 3 / e
-    # a_2d = 5.72e-3  # Hagemeister 2018 atomistic values
+    # # alt conversion of A (2D)
+    # a_2d = A_density * a * (2 ** (1 / 2)) / 3 / e
+    # # a_2d = 5.72e-3  # Hagemeister 2018 atomistic values
 
-    a_2d_field = a_2d / mu_free_spin
+    # a_2d_field = a_2d / mu_free_spin
 
-    # alt conversion of K (2D)
-    k_2d = K_density * a**3 / (2 ** (1 / 2)) / e
-    # k_2d = 0.4e-3  # Hagemeister 2018 atomistic values
+    # # alt conversion of K (2D)
+    # k_2d = K_density * a**3 / (2 ** (1 / 2)) / e
+    # # k_2d = 0.4e-3  # Hagemeister 2018 atomistic values
 
-    k_2d_field = k_2d / mu_free_spin / 6
+    # k_2d_field = k_2d / mu_free_spin / 6
 
     # # k nach Schaeffer:
     # k_schaeff = K_mu / M_s * mu_spin
 
-    # mit V aus kugelannahme: Vol / Spin = 4/3 * pi * (a/2)**3
-    mu_s_kugel = M_s / e * (4 / 3 * np.pi * (a / 2) ** 3)
+    # # mit V aus kugelannahme: Vol / Spin = 4/3 * pi * (a/2)**3
+    # mu_s_kugel = M_s / e * (4 / 3 * np.pi * (a / 2) ** 3)
 
-    a_2d_field_new = A_density * 2 * a / (e * mu_s_kugel)  # *2 dann waers korrekt
-    d_2d_field_new = DM_density * (np.pi * (a / 2) ** 2) / (e * mu_s_kugel)
-    k_2d_field_new = K_density * (4 / 3 * np.pi * (a / 2) ** 3) / (e * mu_s_kugel)
+    # a_2d_field_new = A_density * 2 * a / (e * mu_s_kugel)  # *2 dann waers korrekt
+    # d_2d_field_new = DM_density * (np.pi * (a / 2) ** 2) / (e * mu_s_kugel)
+    # k_2d_field_new = K_density * (4 / 3 * np.pi * (a / 2) ** 3) / (e * mu_s_kugel)
 
-    # mit A aus Hexaeder, V als Volumen des Hexaeders 3D
-    mu_s_hex = M_s / e * a**3 / (2 ** (1 / 2))
+    # # mit A aus Hexaeder, V als Volumen des Hexaeders 3D
+    # mu_s_hex = M_s / e * a**3 / (2 ** (1 / 2))
 
-    a_2d_field_new = A_density * (2 * a) / (e * mu_s_hex)  # *2 dann waers korrekt
-    d_2d_field_new = DM_density * ((3 ** (1 / 2) / 2) * a**2) / (e * mu_s_kugel)
-    k_2d_field_new = K_density * (a**3 / (2 ** (1 / 2))) / (e * mu_s_kugel)
+    # a_2d_field_new = A_density * (2 * a) / (e * mu_s_hex)  # *2 dann waers korrekt
+    # d_2d_field_new = DM_density * ((3 ** (1 / 2) / 2) * a**2) / (e * mu_s_kugel)
+    # k_2d_field_new = K_density * (a**3 / (2 ** (1 / 2))) / (e * mu_s_kugel)
 
     # -----------------------------------------bis hier falsch----------------------------------------------
 
@@ -541,7 +541,7 @@ class sim:
     # ---------------------------------------------------------------Attributes: Basic Sim Params-------------------------------------------------------------------
     # bottom_angles = np.linspace(2.91, 3.49, 30, endpoint=True)
     # v_s_factors = np.linspace(5, 34, 30, endpoint=True)
-    sim_type = "ReLU_changed_capacity"  # or "skyrmion_creation" or "wall_retention" or "wall_retention_new" or "wall_ret_test" or "wall_ret_test_new" or "angled_vs_comparison"
+    sim_type = "x_current"  # or "skyrmion_creation" or "wall_retention" or "wall_retention_new" or "wall_ret_test" or "wall_ret_test_new" or "angled_vs_comparison"
     # or "angled_wall_comparison" or "x_current" or "creation_gate" or "antiferromagnet_simulation" or "pinning_tests"
     # or "first_results_replica" or "wall_retention_reverse_beta" "ReLU" "ReLU_larger_beta" "ReLU_changed_capacity"...
     model_type = "atomistic"  # "atomistic" (hexagonal lattice) or "continuum" (implicating quadratic lattice)
@@ -550,14 +550,14 @@ class sim:
     v_s_factors = np.array([25])
     pivot_point = (250, 100)
     samples = bottom_angles.shape[0] * v_s_factors.shape[0]
-    final_skyr_No = 30
-    top = 1
-    t_max = (final_skyr_No + 1) * top
-    # t_max = 200 # 50
+    final_skyr_No = 1
+    # top = 1
+    # t_max = (final_skyr_No + 1) * top
+    t_max = 1 # 50
     t_relax_skyr = 0#.1
     t_relax_no_skyr = 0.3
     t_circ_buffer = 0.01
-    No_sim_img = 500
+    No_sim_img = 20
     cc_steps = 600000
     len_circ_buffer = min(max(int(t_circ_buffer * No_sim_img / t_max), 5), 50)
     time_per_img = t_max / No_sim_img
@@ -764,7 +764,7 @@ class spin:
     # or "first_results_replica" or "wall_retention_reverse_beta"  ...
 
     # paths
-    mask_dir = "needed_files/Mask_final_ReLU_high_beta_modular.png"
+    mask_dir = "needed_files/Mask_track_free.png"
     orig_mask_dir = mask_dir
     j_dir = "current_temp/current.npy"
     skyr_dir = f"needed_files/skyr_{cst.skyr_name_ext}_{sim.model_type}.npy"

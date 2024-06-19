@@ -11,6 +11,12 @@ import matplotlib.pyplot as plt
 
 # import matplotlib.ticker as tck
 
+def setup_plt():
+
+    plt.rcParams['text.usetex'] = True
+    plt.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}\usepackage{bm}'
+    plt.rcParams['font.family'] = 'serif'
+
 
 def linear_fit(x, y):
     """
@@ -39,6 +45,8 @@ def trajectory_trace(
     fetch_dirs, dest_dir, native_v_s_factor=10, v_s_to_j_s_factor=1.61e10, dest_file="trajectory3thesis.png", title="Trajectory of Skyrmion"
 ):
     # fetch the traj_q file from the fetch folder
+
+    setup_plt()
 
     fig, ax = plt.subplots()
 
@@ -186,8 +194,8 @@ def trajectory_trace(
         # plt.style.use("dark_background")
 
 
-        plt.rcParams["font.family"] = "CMU Serif"
-        plt.rcParams["font.serif"] = "CMU Serif Roman"
+        # plt.rcParams["font.family"] = "CMU Serif"
+        # plt.rcParams["font.serif"] = "CMU Serif Roman"
 
         # to scale with the triangular lattice structure
         y_factor = np.sqrt(3) / 2 * 0.27
@@ -252,9 +260,9 @@ def trajectory_trace(
     # ax.set_xlim([x_min_global - 10, x_max_global + 10])
     # ax.set_ylim([y_min_global - 10, y_max_global + 10])
 
-    font_title = {"family": "CMU Serif", "color": "black", "size": 20}
+    # font_title = {"family": "CMU Serif", "color": "black", "size": 20}
 
-    plt.title(title, fontdict=font_title)
+    plt.title(title)
     plt.legend(loc="upper center")
     plt.xlabel("x [nm]")
     plt.ylabel("y [nm]")

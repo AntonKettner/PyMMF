@@ -168,9 +168,9 @@ def make_wall_retention_plot(fetch_dir, dest_dir, dest_file="wall_retention_fit.
     )
     print(f"a: {a}")
 
-    font_title = {"family": "CMU Serif", "color": "white", "size": 25}
+    # font_title = {"family": "CMU Serif", "color": "white", "size": 25}
 
-    plt.title("Graph of Trajectory (center of skyr)", fontdict=font_title)
+    plt.title("Graph of Trajectory (center of skyr)")
     plt.legend(loc="upper left")
     plt.xlabel("x [0.3 nm]")
     plt.ylabel("y [0.3 nm]")
