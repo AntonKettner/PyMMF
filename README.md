@@ -1,4 +1,4 @@
-# PyMMF: Python Micromagnetic Framework by Roke
+# PyMMF: Python Micromagnetic Framework by Anton Kettner
 Version 0.01
 
 Uses PyCUDA to simulate a magnetic surface on an atomic scale iterating over the LLG equation.
