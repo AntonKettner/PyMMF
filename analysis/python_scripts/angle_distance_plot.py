@@ -278,9 +278,11 @@ def current_vs_distance_plot(fetch_dir, fetch_file, dest_dir, dest_file="angle_d
 
 
 def main():
+    cwd = os.getcwd()
+    os.chdir(os.path.dirname(os.path.dirname(cwd)))
 
     file_name = "traj_q.npy"
-    fetch_folder_name = f"/OUTPUT/your_folder_name"
+    fetch_folder_name = f"OUTPUT/your_sample_folder_name"
 
     dest_folder = f"OUTPUT/trajectories/angle_distance_plot_left_edge"
     if not os.path.exists(dest_folder):
