@@ -1,4 +1,4 @@
-# IMPORTS
+# PyMMF by Anton Kettner, 2024
 # INFO:
 # - This script is used to simulate skyrmions in a 2D system using PyCUDA
 # - sim class --> the basic simulation parameters and methods of the simulation
