@@ -1,11 +1,11 @@
 # PyMMF by Anton Kettner, 2024
 # INFO:
 # - This script is used to simulate skyrmions in a 2D system using PyCUDA
-# - sim class --> the basic simulation parameters and methods of the simulation
-# - spin class --> spin field, its parameters and the Skyr array, type of simulation
-# - cst class for setting constants --> uncomment right params there
-# - math class --> mathematical operations
-# - output class --> output location, status bar stats
+# - sim class                       --> the basic simulation parameters and METHODS OF THE SIMULATION
+# - spin class                      --> spin field, its parameters and the Skyrmion array, METHODS TO ALTER AND ANALYZE THE SPINFIELD
+# - cst class for setting constants --> PHYSICAL CONSTANTS AND PARAMETERS
+# - math class                      --> MATHEMATICAL OPERATIONS
+# - output class                    --> CONSTANTS: output location, METHODS: status bar stats, conversion to mp4, save images
 
 # Standard library imports
 import logging  # enabling display of logging.info messages
@@ -171,31 +171,62 @@ class math:
 
 class cst:
     """
-    A class that contains the physical constants and meterial parameters used in the simulation of skyrmions.
+    COMMENT AI GENERATED!!!
+    A class that contains the physical constants and material parameters used in the simulation of skyrmions.
 
     Attributes:
+        s (float): Spin quantum number.
+        g_el_neg (float): Electron g-factor.
         mu_b (float): Bohr magneton in eV/T.
-        mu_spin (float): Magnetic moment of individual spins in eV/T       ||      M_s = mu_s * n    --> n = Spindichte
+        mu_free_spin (float): Magnetic moment of free spins in eV/T.
         mu_0 (float): Vacuum permeability in Vs/(Am).
         gamma_el (float): Gyromagnetic ratio in 1/(ns*T).
-        alpha (float): Gilbert damping constant up to 0.01.
-        beta (float): Dimensionless non-adiabaticity parameter 0.05 - 0.1, always in relation to alpha.
-        a (float): Mesh size in x and y.
-        n (int): Averaging over connections, grid specific.
+        alpha (float): Gilbert damping constant.
+        beta (float): Dimensionless non-adiabaticity parameter.
+        a (float): Lattice constant in meters.
+        h (float): Atomic layer height in meters.
+        p (float): Spin polarization.
         e (float): Elementary charge in C.
         coords (dict): Dictionary containing the coordinates x, y, and z.
-        NN_vecs (numpy.ndarray): Array containing the nearest neighbor vectors.
-        rot_matrix_default (numpy.ndarray): Default rotation matrix.
-        A_density (float): Exchange interaction in J/m.
-        DM_density (float): Dzyaloshinskii-Moriya interaction in J/m^2.
+        rot_matrix_90 (numpy.ndarray): Rotation matrix for 90 degrees.
+        Temp (float): Temperature in Kelvin.
+        v_s_to_j_c_factor (float): Conversion factor from spin velocity to current density.
+        A_density (float): Exchange interaction density in J/m.
+        DM_density (float): Dzyaloshinskii-Moriya interaction density in J/m^2.
         K_mu (float): Anisotropy in the z-direction in J/m^3.
-        B_ext (float): Magnetic field in the z-direction in T.
+        B_ext (float): External magnetic field in T.
+        B_fields (numpy.ndarray): Array of external magnetic fields.
         M_s (float): Saturation magnetization in A/m.
-        K_density (float): Anisotropy in the z-direction in J/m^3, calculated from K_mu and M_s.
-        DM_vecs (numpy.ndarray): Array containing the Dzyaloshinskii-Moriya vectors.
+        K_density (float): Anisotropy density in J/m^3.
+        mu_s (float): Magnetic moment per spin in eV/T.
+        skyr_name_ext (str): Extension name for skyrmion.
+        B_a_quadr (float): Effective exchange field for quadratic lattice.
+        B_d_quadr (float): Effective DM field for quadratic lattice.
+        B_k_quadr (float): Effective anisotropy field for quadratic lattice.
+        B_a_hex (float): Effective exchange field for hexagonal lattice.
+        B_d_hex (float): Effective DM field for hexagonal lattice.
+        B_k_hex (float): Effective anisotropy field for hexagonal lattice.
+        E_a_quadr (float): Effective exchange energy for quadratic lattice.
+        E_d_quadr (float): Effective DM energy for quadratic lattice.
+        E_k_quadr (float): Effective anisotropy energy for quadratic lattice.
+        E_a_hex (float): Effective exchange energy for hexagonal lattice.
+        E_d_hex (float): Effective DM energy for hexagonal lattice.
+        E_k_hex (float): Effective anisotropy energy for hexagonal lattice.
+        NNs (int): Number of nearest neighbors.
+        hex_image_scalefactor (int): Scale factor for hexagonal images.
+        A_Field (float): Exchange field.
+        DM_Field (float): DM field.
+        K_Field (float): Anisotropy field.
+        dAdAtom (float): Area per atom.
+        dVdAtom (float): Volume per atom.
+        NN_vecs (numpy.ndarray): Nearest neighbor vectors.
+        NN_pos_even_row (numpy.ndarray): Nearest neighbor positions for even rows.
+        NN_pos_odd_row (numpy.ndarray): Nearest neighbor positions for odd rows.
+        rotate_anticlock (bool): Flag to rotate vectors anticlockwise.
+        DM_vecs (numpy.ndarray): Dzyaloshinskii-Moriya vectors.
 
     Methods:
-        __init__(self, rotate_anticlock=False): Initializes the class with an optional argument to rotate vectors anticlockwise.
+        __init__(cls, rotate_anticlock=False): Initializes the class with an optional argument to rotate vectors anticlockwise.
         rotate_vecs_90(self, vecs): Rotates the given vectors by 90 degrees clockwise or anticlockwise depending on the value of rotate_anticlock.
     """
 
@@ -209,57 +240,14 @@ class cst:
     gamma_el = 176.1
     alpha = 0.1
     beta = alpha / 2
-    a = 0.271e-9
+    a = 0.271e-9    
+    h = 0.4e-9  # atomic layer height according to literature -> s. thesis
     p = 1  # spin polarisation
-    n = 2  #! I do not really know why this has to be factor 2
     e = 1.602176634e-19
     coords = {"x": 0, "y": 1, "z": 2}
-    # Rotation Matrix to create the DM-vecs
-    rot_matrix_90 = np.array([[0, 1, 0], [-1, 0, 0], [0, 0, 1]], dtype=np.float32)
+    rot_matrix_90 = np.array([[0, 1, 0], [-1, 0, 0], [0, 0, 1]], dtype=np.float32)  # Rotation Matrix to create the DM-vecs
     Temp = 4  # in K
-
-    # Konstanten Paper 2
-    # J_0 = 4.68e-2 # Austauschwechselwirkung in eV
-    # DM_0 = 5.8e-3 #DM - Wechselwirkung in eV
-    # K_0 = 4.6e-4 # Anisotropie in Z-Richtung in eV  sollte 4.6e-4 sein
-    # B_ext = 0.5 # Magnetfeld in z-Richtung
-
-    # # Konstanten Frederik
-    # J = 1
-    # DM = 0.2
-    # B = 0.02
-    # K = 0
-
-    # # Konstanten Leo
-    # J_0 = 2e-12
-    # M_s = 1.1e6
-    # DM_0 = 3.9e-3
-    # Aex = 2e-12   # Exchange stiffness
-    # K_0 = 2.5e6
-
-    # # Konstanten Huang 2017
-    # J_0 = 15e-12    # Austauschwechselwirkung in J/m2
-    # DM_0 = 3e-3     #DM - Wechselwirkung in J/m^2
-    # K_0 = 0.7e6     # Anisotropie in Z-Richtung in J/m^3
-    # B_ext = 0       # z-Magnetfeld in T
-    # M_s = 0.58e6   # Saettigungsmagnetisierung in A/m
-
-    # # Konstanten Wang 2018 Pt/Co/MgO  ! mit n=2 richtig   --> Co als Fokus
-    # A_density  = 15e-12  # Austauschwechselwirkung in J/m
-    # DM_density = 3.7e-3  # DM - Wechselwirkung in J/m^2
-    # K_density  = 0.588e6  # Anisotropie in Z-Richtung in J/m^3
-    # B_ext      = 0.1  # z-Magnetfeld in T
-    # M_s        = 0.58e6  # Saettigungsmagnetisierung in A/m
-    # K_mu       = K_density + mu_0 * M_s**2 / 2
-
-    # # Konstanten Wang 2018  Pd/Fe on Ir(111)   --> zwischen Pd und Fe Layer
-    # # --> funktioniert!!! alte Methode --> A_Field verwenden: r=0.92nm x_current als creation
-    # # sehr kleines dt (heun/40), kleines a(0.27nm), kleines v_s (0.5)
-    # A_density = 4.87e-12  # Austauschwechselwirkung in J/m
-    # DM_density = 3.43e-3  # DM - Wechselwirkung in J/m^2
-    # K_density = 2.5e6  # Anisotropie in Z-Richtung in J/m^3
-    # B_ext = 0.8  # z-Magnetfeld in T
-    # M_s = 0.961e6  # Saettigungsmagnetisierung in A/m
+    v_s_to_j_c_factor = -2 * e / (a**3 * p)
 
     # # Konstanten Schaeffer 2018 from Romming Pd/Fe bilayer on Ir(111)
     A_density = 2e-12  # Austauschwechselwirkung in J/m
@@ -272,70 +260,6 @@ class cst:
     mu_s = 3 * mu_b
     skyr_name_ext = "schaeffer_1.5"
 
-    # # Konstanten Schaeffer gross 2018
-    # A_density = 2e-12  # Austauschwechselwirkung in J/m
-    # DM_density = 3.9e-3  # DM - Wechselwirkung in J/m^2
-    # K_mu = 2.5e6  # Anisotropie in Z-Richtung in J/m^3
-    # B_ext = 1.15  # z-Magnetfeld in T
-    # M_s = 1.1e6  # Saettigungsmagnetisierung in A/m
-    # K_density = K_mu - mu_0 * M_s**2 / 2
-
-    # # Konstanten Wang 2018  W/Co20Fe60B20/MgO   --> Mittelschicht aus Co, Fe, B als Fokus
-    # # # --> funktioniert!!! alte Methode --> A_Field verwenden: r(Bext=0.005)~62nm x_current mit low v_s (0.5) als creation
-    # # # --> funktioniert!!! alte Methode --> A_Field verwenden: r(Bext=0.008)~47nm x_current mit low v_s (0.5) als creation
-    # # sehr grosses dt (heun*30), grosses a(5nm), sehr kleines v_s (0.5), etwas groessere relaxtime ist gut
-    # A_density = 10e-12  # Austauschwechselwirkung in J/m
-    # DM_density = 0.7e-3  # DM - Wechselwirkung in J/m^2
-    # K_density = 0.0228e6  # Anisotropie in Z-Richtung in J/m^3
-    # B_ext = 0.005  # z-Magnetfeld in T
-    # # B_ext = 0.008  # z-Magnetfeld in T
-    # M_s = 0.650e6  # Saettigungsmagnetisierung in A/m
-
-    # # Konstanten Wang 2018  MnSi   --> klappt fuer n = 2, kleines a
-    # J_0 = 0.845e-12    # Austauschwechselwirkung in J/m
-    # DM_0 = 0.338e-3     #DM - Wechselwirkung in J/m^2
-    # K_0 = -0.0334e6     # Anisotropie in Z-Richtung in J/m^3
-    # B_ext = 1       # z-Magnetfeld in T
-    # M_s = 0.163e6   # Saettigungsmagnetisierung in A/m
-
-    # # Mn/Si Martinez 2018
-    # M_s = 0.6e6  # Saettigungsmagnetisierung in A/m
-    # A_density = 9e-12  # Austauschwechselwirkung in J/m
-    # A_density = 13e-12  # Austauschwechselwirkung in J/m --> das ist glaube ich das Richtige, noch nicht simuliert
-    # DM_density = 3e-3  # DM - Wechselwirkung in J/m^2
-    # B_ext = 1 / 6  # z-Magnetfeld in T
-    # K_mu = 0.6e6  # Anisotropie in Z-Richtung in J/m^3
-    # K_density = K_mu - mu_0 * M_s**2 / 2
-    # a = 1e-9  # Gitterkonstante / Gittergroesse in m
-    # mu_s = mu_b  # Magnetisches Moment eines Spins in eV/T
-    # skyr_name_ext = "martinez_2018"
-
-    # #Konstanten Tim
-    # J_0 = 2 * 5.72e-3 # Austauschwechselwirkung in eV
-    # DM_0 = 2 * 1.52e-3 #DM - Wechselwirkung in eV
-    # K_0 = 4e-4 # Anisotropie in Z-Richtung in eV
-    # B_ext = 1.5 # Magnetfeld in negative Z-Richtung
-
-    # # Konstanten normal
-    # A = 15 # Austauschwechselwirkung in pJ/m
-    # D = 3.7 #DM - Wechselwirkung in mJ/m^2
-    # K = 0.588 # Anisotropie in Z-Richtung in MJ/m^3
-
-    # with spin_volume_density = spins per unit cell / volume of unit cell
-    # A/m in eV/T --> M_s / spin_volume_density / el_charge
-
-    # ---------------Urspruenglich so ueber mu_s berechnet -> wird nun überschrieben quadr oder hex------------------
-
-    mu_spin = M_s * ((a / n) ** 3) / e
-
-    # J/m in T --> J_0 / spin_line_density / el_charge / mu_s
-    A_Field = A_density * (a / n) / e / mu_spin  # / 3 --> for hexagonal lattice
-
-    # J/m^2 in T --> DM_0 / spin_surface_density / el_charge / mu_s
-    DM_Field = DM_density * (a / n) ** 2 / e / mu_spin  # / 3 --> for hexagonal lattice
-
-    # J/m^3 in T --> K_0 / spin_volume_density / el_charge / mu_s
-    K_Field = K_density * (a / n) ** 3 / e / mu_spin
 
     # -------------my Conversion to Effective B_field constants in a 2D QUADRATIC LATTICE from Micromagnetic Constants -----------------------
 
@@ -353,7 +277,7 @@ class cst:
 
     B_k_hex = K_density / M_s
 
-    # -------------Meine Conversion zu atomistischen Energie-Konstanten die funktioniert (quadr lattice)-----------------------
+    # -------------my Conversion zu atomistischen Energie-Konstanten die funktioniert (quadr lattice)-----------------------
 
     E_a_quadr = 4 * A_density * mu_s / (a**2 * M_s) * (1 / 2)
 
@@ -368,68 +292,6 @@ class cst:
     E_d_hex = 2 * DM_density * mu_s / (a * M_s) * (1 / 3)
 
     E_k_hex = K_density * mu_s / M_s
-
-    # -------------old stuff-----------------------
-
-    # ab hier zweiter Versuch
-
-    # # energy constants by conversion formulae for hexagonal lattice
-    # d = DM_density * a**2 * 2 ** (1 / 2) / 3 / e
-
-    # # d for alt conversion (2D)
-    # d_2d = DM_density * a**2 / (2 ** (1 / 2) * 3) / e
-    # # d_2d = 1.52e-3  # Hagemeister 2018 atomistic values
-
-    # d_2d_field = d_2d / mu_free_spin
-
-    # # alt conversion of A (2D)
-    # a_2d = A_density * a * (2 ** (1 / 2)) / 3 / e
-    # # a_2d = 5.72e-3  # Hagemeister 2018 atomistic values
-
-    # a_2d_field = a_2d / mu_free_spin
-
-    # # alt conversion of K (2D)
-    # k_2d = K_density * a**3 / (2 ** (1 / 2)) / e
-    # # k_2d = 0.4e-3  # Hagemeister 2018 atomistic values
-
-    # k_2d_field = k_2d / mu_free_spin / 6
-
-    # # k nach Schaeffer:
-    # k_schaeff = K_mu / M_s * mu_spin
-
-    # # mit V aus kugelannahme: Vol / Spin = 4/3 * pi * (a/2)**3
-    # mu_s_kugel = M_s / e * (4 / 3 * np.pi * (a / 2) ** 3)
-
-    # a_2d_field_new = A_density * 2 * a / (e * mu_s_kugel)  # *2 dann waers korrekt
-    # d_2d_field_new = DM_density * (np.pi * (a / 2) ** 2) / (e * mu_s_kugel)
-    # k_2d_field_new = K_density * (4 / 3 * np.pi * (a / 2) ** 3) / (e * mu_s_kugel)
-
-    # # mit A aus Hexaeder, V als Volumen des Hexaeders 3D
-    # mu_s_hex = M_s / e * a**3 / (2 ** (1 / 2))
-
-    # a_2d_field_new = A_density * (2 * a) / (e * mu_s_hex)  # *2 dann waers korrekt
-    # d_2d_field_new = DM_density * ((3 ** (1 / 2) / 2) * a**2) / (e * mu_s_kugel)
-    # k_2d_field_new = K_density * (a**3 / (2 ** (1 / 2))) / (e * mu_s_kugel)
-
-    # -----------------------------------------bis hier falsch----------------------------------------------
-
-    # # original working
-    # mu_free_spin = mu_b / 2
-    # k_2d = 0.27e-3
-    # a_2d = 2.86e-3
-    # d_2d = 0.76e-3
-    # d_2d_field = d_2d / mu_free_spin
-    # a_2d_field = a_2d / mu_free_spin
-    # k_2d_field = k_2d / mu_free_spin / 6
-
-    # # Values Hagemeister 2018 --> wie Tim (Pd/Fe on Ir(111))
-    # mu_free_spin = mu_b * 3 
-    # d_2d = 1.52e-3  # Hagemeister 2018 atomistic values
-    # a_2d = 5.72e-3  # Hagemeister 2018 atomistic values
-    # k_2d = 0.4e-3  # Hagemeister 2018 atomistic values
-    # d_2d_field = d_2d / mu_free_spin * 2  # hier * 2 wegen Kernel Struktur
-    # a_2d_field = a_2d / mu_free_spin * 2  # hier * 2 wegen Kernel Struktur
-    # k_2d_field = k_2d / mu_free_spin / 4  # hier * 0.5 wegen Kernel Struktur
 
     @classmethod
     def __init__(cls, rotate_anticlock=False):
@@ -454,7 +316,8 @@ class cst:
             cls.A_Field = cls.B_a_quadr
             cls.DM_Field = cls.B_d_quadr
             cls.K_Field = cls.B_k_quadr
-
+            cls.dAdAtom = cls.a ** 2 * 2 * np.sqrt(3)
+            cls.dVdAtom = cls.dAdAtom * cls.h
         rotation_by_angle = lambda angle: np.array(
             [
                 [np.cos(angle), -np.sin(angle), 0],
@@ -462,8 +325,6 @@ class cst:
                 [0, 0, 1],
             ]
         )
-
-        # mu_free_spin = g_el_neg * mu_b * (s * (s + 1)) ** (1 / 2)  # 1e-4
 
         # Nearest neighbor vectors
         cls.NN_vecs = np.empty((cls.NNs, 3), dtype=np.float32)
@@ -478,13 +339,8 @@ class cst:
             cls.NN_pos_even_row = np.array([[1, 0, 0], [0, 1, 0], [-1, 0, 0], [0, -1, 0]])
             cls.NN_pos_odd_row = cls.NN_pos_even_row
 
-        # cls.NN_vecs = np.array([[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0]])
-        # cls.NN_pos_even_row = cls.NN_vecs
-        # cls.NN_pos_odd_row = cls.NN_vecs
-
         cls.rotate_anticlock = rotate_anticlock
         cls.DM_vecs = cst.rotate_vecs_90(cls, cls.NN_vecs)
-        # cst.DM_vecs = np.array([[0,1,0], [0,-1,0], [1,0,0], [-1,0,0]])
 
     def rotate_vecs_90(self, vecs):
         """
@@ -500,19 +356,6 @@ class cst:
             return np.ascontiguousarray(np.dot(cst.rot_matrix_90, vecs.T).T)
         else:
             return np.ascontiguousarray(np.dot(cst.rot_matrix_90.T, vecs.T).T)
-
-    @staticmethod
-    def j_c_from_v_s(v_s):
-        """
-        Calculates the current density from the velocity of charged particles.
-
-        Args:
-            v_s (float): The velocity of charged particles.
-
-        Returns:
-            float: The current density.
-        """
-        return -2 * cst.e * v_s / (cst.a**3 * cst.p)
 
 
 class sim:
@@ -1234,6 +1077,7 @@ class spin:
                         * v_s_sample_factor
                     )
                 )
+                # -2 * cst.e * v_s / (cst.a**3 * cst.p)
             except:
                 logging.info("current_temp file not found, resulting to constant current in x dir")
                 cls.v_s = cls.set_constant_v_s(v_s_sample_factor=v_s_sample_factor, angle=bottom_angle)
@@ -1253,12 +1097,15 @@ class spin:
         try:
             logging.info(f"test v_s at {v_s_test_loc}: {tuple(cls.v_s[v_s_test_loc[0], v_s_test_loc[1]]) * cst.a * 1e9} m/s\n")
             logging.info(f"test v_s at {v_s_test_loc}: {tuple(cls.v_s[v_s_test_loc[0], v_s_test_loc[1]]) * 1e9} a/s\n")
-            logging.info(f"j_c at {v_s_test_loc}: {cst.j_c_from_v_s(v_s=cls.v_s[v_s_test_loc[0], v_s_test_loc[1]])} A/m^2")
+            logging.info(f"j_c at {v_s_test_loc}: {cst.v_s_to_j_c_factor*cls.v_s[v_s_test_loc[0], v_s_test_loc[1]]} A/m^2")
         except:
-            None
+            logging.warning(f"v_s test failed at location: {v_s_test_loc}")
 
     @classmethod
     def update_current(cls, bottom_angle, v_s_sample_factor, j_dir=None):
+        """
+        updates v_s, the velocity field with 
+        """
         cls.j_dir = j_dir
 
         # dynamic v_s
@@ -1302,7 +1149,7 @@ class spin:
         return cls.v_s
 
     @classmethod
-    def transfer_to_GPU(cls, sample):
+    def transfer_to_GPU(cls):
         """
         Allocates memory on the GPU and transfers the mask, the average image of z components, and the effective field to the GPU.
 
@@ -1324,6 +1171,10 @@ class spin:
 
         # As textured memory needs the kernel for sending the texture, here only the definition that it is an np array
         cls.cuda_v_s = cuda.np_to_array(cls.v_s, order="C")
+        
+        # # transfer the v_s to GPU
+        # cls.v_s_id = cuda.mem_alloc(cls.v_s.nbytes)
+        # cuda.memcpy_htod(cls.v_s_id, cls.v_s)
 
         # save space for q topo calculation on GPU
         cls.q_topo_id = cuda.mem_alloc(cls.q_topo_results.nbytes)
@@ -1432,6 +1283,9 @@ class spin:
         # allocate memory on GPU and transfer the spinfield
         cls.spins_id = cuda.mem_alloc(spinfield.nbytes)  # Allocate memory on GPU
         cuda.memcpy_htod(cls.spins_id, spinfield)  # Copy spins to GPU
+
+        # allocate memory on GPU for the current
+        cls.v_s_id = cuda.mem_alloc(cls.v_s.nbytes)
 
         return spinfield
 
@@ -1899,11 +1753,9 @@ class output:
             logging.info(f"v_s_to_wall threshold: {spin.x_threashold}\n")
 
         logging.info(f"PHYSICAL CONSTANTS")
-        logging.info(f"mu_s: {cst.mu_spin:.4g} eV/T")
         logging.info(f"mu_free_spin: {cst.mu_free_spin:.4g} eV/T")
         logging.info(f"mu_0: {cst.mu_0:.4g} Vs/(Am)")
         logging.info(f"(Mesh-size or atomic length) a: {cst.a:.4g} m")
-        logging.info(f"(still dunno) n: {cst.n:.4g}\n")
         logging.info(f"NN_vecs: {cst.NN_vecs}")
         logging.info(f"DM_vecs: {cst.DM_vecs}")
         logging.info(f"NN_pos_even_row: {cst.NN_pos_even_row}")
@@ -2966,10 +2818,10 @@ def simulate(sim_no, angle, v_s_fac):
                                 logging.warning(f"NEW X: {spin.skyr_set_x}")
 
                                 # set v_s to 0
-                                v_s = spin.update_current(v_s_sample_factor=0, bottom_angle=0)
+                                spin.update_current(v_s_sample_factor=0, bottom_angle=0)
 
                                 # copy v_s array to GPU
-                                spin.cuda_v_s = cuda.np_to_array(v_s, order="C")
+                                spin.cuda_v_s = cuda.np_to_array(spin.v_s, order="C")
                                 tex.set_array(spin.cuda_v_s)
                                 cuda.Context.synchronize()
 
@@ -3203,15 +3055,7 @@ def main():
         spin.update_current_and_mask(bottom_angle, v_s_sample_factor, mask_dir=f"{sample_dir}/racetrack.png", j_dir=f"{sample_dir}/current.npy")
         
         # senden von Variablen an die GPU
-        spin.transfer_to_GPU(sample)
-        # spin.transfer_to_GPU()
-        # spin.transfer_to_GPU()
-
-        # if sample in (0, 0):
-        #     # time.sleep(3)
-        #     continue
-
-        # spin.transfer_to_GPU()
+        spin.transfer_to_GPU()
 
         # Simulation der Skyrmionen
         q_init, q_end = simulate(sample, bottom_angle, v_s_sample_factor)
