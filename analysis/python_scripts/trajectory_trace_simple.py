@@ -7,11 +7,13 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 import glob
 from PIL import Image
 import matplotlib
+
 import matplotlib.pyplot as plt
 
 # import matplotlib.ticker as tck
 
 def setup_plt():
+    matplotlib.use("Agg")
 
     plt.rcParams['text.usetex'] = True
     plt.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}\usepackage{bm}'
