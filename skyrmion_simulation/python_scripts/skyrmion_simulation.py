@@ -18,6 +18,7 @@ import sys
 import glob
 import shutil
 import time
+import math
 import collections
 import multiprocessing
 
@@ -62,111 +63,7 @@ from analysis.python_scripts.trajectory_trace_new_wall_retention import make_wal
 # from trajectory_trace_with_pics import trajectory_trace
 from analysis.python_scripts.trajectory_trace_simple import trajectory_trace
 from analysis.python_scripts.q_r_vs_time_plot import create_q_r_vs_time_plot
-from draw_hex_spinfield import draw_hexagonal_spinfield as draw_hex_ext
 from analysis.python_scripts.angle_distance_plot import current_vs_distance_plot
-
-
-class math:
-    """
-    A collection of static methods for mathematical operations used in the skyrmion simulation field collection script.
-    """
-
-    @staticmethod
-    def ceil(n):
-        """
-        Returns the smallest integer greater than or equal to n.
-
-        Parameters:
-        n (float): The number to round up.
-
-        Returns:
-        int: The smallest integer greater than or equal to n.
-        """
-        return int(-1 * n // 1 * -1)
-
-    @staticmethod
-    def floor(n):
-        """
-        Returns the largest integer less than or equal to n.
-
-        Parameters:
-        n (float): The number to round down.
-
-        Returns:
-        int: The largest integer less than or equal to n.
-        """
-        return int(n // 1)
-
-    @staticmethod
-    def round(n):
-        """
-        Returns the nearest integer to n.
-
-        Parameters:
-        n (float): The number to round.
-
-        Returns:
-        int: The nearest integer to n.
-        """
-        return math.floor(n + 0.5)
-
-    @staticmethod
-    def sigmoid(x, exp_Factor=-20):
-        """
-        Calculates the sigmoid function for a given input.
-
-        Parameters:
-        x (float): The input value.
-        exp_Factor (float): The exponential factor. Default is -20.
-
-        Returns:
-        float: The output of the sigmoid function for the given input.
-        """
-        return 1 / (1 + np.exp(exp_Factor * (min(x, 1) - 1)))
-
-    @staticmethod
-    def norm(array):
-        """
-        Normalizes the given array.
-
-        Parameters:
-        array (numpy array): The array to normalize.
-
-        Returns:
-        numpy array: The normalized array.
-        """
-        array[spin.mask] /= value(array[spin.mask], axis=-1, keepdims=True)
-        return array
-
-    @staticmethod
-    def mask(array):
-        """
-        Masks the given array.
-
-        Parameters:
-        array (numpy array): The array to mask.
-
-        Returns:
-        numpy array: The masked array.
-        """
-        return array * spin.mask[..., np.newaxis]
-
-    @staticmethod
-    def rnd_vecs(shape):
-        """
-        Generates random vectors on the surface of a unit sphere for each point in the given shape.
-
-        Parameters:
-        shape (tuple): Shape of the array (e.g., (100, 200)).
-
-        Returns:
-        numpy array: A shape[0] x shape[1] x 3 array of random vectors.
-        """
-        # Number of points
-
-        vectors = uniform_direction(3).rvs(shape[0] * shape[1], random_state=np.random.default_rng())
-        vectors = vectors.reshape(shape[0], shape[1], 3)
-        return vectors
 
 
 class cst:
@@ -174,60 +71,60 @@ class cst:
     COMMENT AI GENERATED!!!
     A class that contains the physical constants and material parameters used in the simulation of skyrmions.
 
-    Attributes:
-        s (float): Spin quantum number.
-        g_el_neg (float): Electron g-factor.
-        mu_b (float): Bohr magneton in eV/T.
-        mu_free_spin (float): Magnetic moment of free spins in eV/T.
-        mu_0 (float): Vacuum permeability in Vs/(Am).
-        gamma_el (float): Gyromagnetic ratio in 1/(ns*T).
-        alpha (float): Gilbert damping constant.
-        beta (float): Dimensionless non-adiabaticity parameter.
-        a (float): Lattice constant in meters.
-        h (float): Atomic layer height in meters.
-        p (float): Spin polarization.
-        e (float): Elementary charge in C.
-        coords (dict): Dictionary containing the coordinates x, y, and z.
-        rot_matrix_90 (numpy.ndarray): Rotation matrix for 90 degrees.
-        Temp (float): Temperature in Kelvin.
-        v_s_to_j_c_factor (float): Conversion factor from spin velocity to current density.
-        A_density (float): Exchange interaction density in J/m.
-        DM_density (float): Dzyaloshinskii-Moriya interaction density in J/m^2.
-        K_mu (float): Anisotropy in the z-direction in J/m^3.
-        B_ext (float): External magnetic field in T.
-        B_fields (numpy.ndarray): Array of external magnetic fields.
-        M_s (float): Saturation magnetization in A/m.
-        K_density (float): Anisotropy density in J/m^3.
-        mu_s (float): Magnetic moment per spin in eV/T.
-        skyr_name_ext (str): Extension name for skyrmion.
-        B_a_quadr (float): Effective exchange field for quadratic lattice.
-        B_d_quadr (float): Effective DM field for quadratic lattice.
-        B_k_quadr (float): Effective anisotropy field for quadratic lattice.
-        B_a_hex (float): Effective exchange field for hexagonal lattice.
-        B_d_hex (float): Effective DM field for hexagonal lattice.
-        B_k_hex (float): Effective anisotropy field for hexagonal lattice.
-        E_a_quadr (float): Effective exchange energy for quadratic lattice.
-        E_d_quadr (float): Effective DM energy for quadratic lattice.
-        E_k_quadr (float): Effective anisotropy energy for quadratic lattice.
-        E_a_hex (float): Effective exchange energy for hexagonal lattice.
-        E_d_hex (float): Effective DM energy for hexagonal lattice.
-        E_k_hex (float): Effective anisotropy energy for hexagonal lattice.
-        NNs (int): Number of nearest neighbors.
-        hex_image_scalefactor (int): Scale factor for hexagonal images.
-        A_Field (float): Exchange field.
-        DM_Field (float): DM field.
-        K_Field (float): Anisotropy field.
-        dAdAtom (float): Area per atom.
-        dVdAtom (float): Volume per atom.
-        NN_vecs (numpy.ndarray): Nearest neighbor vectors.
-        NN_pos_even_row (numpy.ndarray): Nearest neighbor positions for even rows.
-        NN_pos_odd_row (numpy.ndarray): Nearest neighbor positions for odd rows.
-        rotate_anticlock (bool): Flag to rotate vectors anticlockwise.
-        DM_vecs (numpy.ndarray): Dzyaloshinskii-Moriya vectors.
+    ATTRIBUTES                      
+    s (float)                      : Spin quantum number.
+    g_el_neg (float)               : Electron g-factor.
+    mu_b (float)                   : Bohr magneton in eV/T.
+    mu_free_spin (float)           : Magnetic moment of free spins in eV/T.
+    mu_0 (float)                   : Vacuum permeability in Vs/(Am).
+    gamma_el (float)               : Gyromagnetic ratio in 1/(ns*T).
+    alpha (float)                  : Gilbert damping constant.
+    beta (float)                   : Dimensionless non-adiabaticity parameter.
+    a (float)                      : Lattice constant in meters.
+    h (float)                      : Atomic layer height in meters.
+    p (float)                      : Spin polarization.
+    e (float)                      : Elementary charge in C.
+    coords (dict)                  : Dictionary containing the coordinates x, y, and z.
+    rot_matrix_90 (numpy.ndarray)  : Rotation matrix for 90 degrees.
+    Temp (float)                   : Temperature in Kelvin.
+    v_s_to_j_c_factor (float)      : Conversion factor from spin velocity to current density.
+    A_density (float)              : Exchange interaction density in J/m.
+    DM_density (float)             : Dzyaloshinskii-Moriya interaction density in J/m^2.
+    K_mu (float)                   : Anisotropy in the z-direction in J/m^3.
+    B_ext (float)                  : External magnetic field in T.
+    B_fields (numpy.ndarray)       : Array of external magnetic fields.
+    M_s (float)                    : Saturation magnetization in A/m.
+    K_density (float)              : Anisotropy density in J/m^3.
+    mu_s (float)                   : Magnetic moment per spin in eV/T.
+    skyr_name_ext (str)            : Extension name for skyrmion.
+    B_a_quadr (float)              : Effective exchange field for quadratic lattice.
+    B_d_quadr (float)              : Effective DM field for quadratic lattice.
+    B_k_quadr (float)              : Effective anisotropy field for quadratic lattice.
+    B_a_hex (float)                : Effective exchange field for hexagonal lattice.
+    B_d_hex (float)                : Effective DM field for hexagonal lattice.
+    B_k_hex (float)                : Effective anisotropy field for hexagonal lattice.
+    E_a_quadr (float)              : Effective exchange energy for quadratic lattice.
+    E_d_quadr (float)              : Effective DM energy for quadratic lattice.
+    E_k_quadr (float)              : Effective anisotropy energy for quadratic lattice.
+    E_a_hex (float)                : Effective exchange energy for hexagonal lattice.
+    E_d_hex (float)                : Effective DM energy for hexagonal lattice.
+    E_k_hex (float)                : Effective anisotropy energy for hexagonal lattice.
+    NNs (int)                      : Number of nearest neighbors.
+    hex_image_scalefactor (int)    : Scale factor for hexagonal images.
+    A_Field (float)                : Exchange field.
+    DM_Field (float)               : DM field.
+    K_Field (float)                : Anisotropy field.
+    dAdAtom (float)                : Area per atom.
+    dVdAtom (float)                : Volume per atom.
+    NN_vecs (numpy.ndarray)        : Nearest neighbor vectors.
+    NN_pos_even_row (numpy.ndarray): Nearest neighbor positions for even rows.
+    NN_pos_odd_row (numpy.ndarray) : Nearest neighbor positions for odd rows.
+    rotate_anticlock (bool)        : Flag to rotate vectors anticlockwise.
+    DM_vecs (numpy.ndarray)        : Dzyaloshinskii-Moriya vectors.
 
-    Methods:
-        __init__(cls, rotate_anticlock=False): Initializes the class with an optional argument to rotate vectors anticlockwise.
-        rotate_vecs_90(self, vecs): Rotates the given vectors by 90 degrees clockwise or anticlockwise depending on the value of rotate_anticlock.
+    METHODS                               
+    __init__(cls, rotate_anticlock=False): Initializes the class with an optional argument to rotate vectors anticlockwise.
+    rotate_vecs_90(self, vecs)           : Rotates the given vectors by 90 degrees clockwise or anticlockwise depending on the value of rotate_anticlock.
     """
 
     # ---------------------------------------------------------------Attributes: Physical constants-------------------------------------------------------------------
@@ -360,66 +257,92 @@ class cst:
 
 class sim:
     """
-    A class representing the basic simulation parameters and methods of the simulation.
+    COMMENT AI GENERATED!!!
+    A class representing the basic simulation parameters and methods for simulating skyrmions.
 
-    Attributes:
-    - dt (float): The time step in nanoseconds.
-    - samples (int): The number of samples.
-    - t_max (int): The maximum simulation time in nanoseconds.
-    - steps_total (int): The total number of time steps.
-    - No_sim_img (int): The number of simulation images.
-    - final_skyr_No (int): The final number of skyrmions.
-    - t_last_skyr_frac (int): The time until all skyrmions are set.
-    - checkpoint_times (numpy.ndarray): The times at which a picture is saved.
-    - avg_sim_steps (int): The number of simulation steps per image.
-    - save_avg (int): The default save average || steps_total has to be divisible by save_avg
+    ATTRIBUTES                      : 
+    - sim_type (str)                : The type of simulation -> many are possible.
+    - model_type (str)              : The model type, either "atomistic" (hexagonal lattice) or "continuum" (implicating quadratic lattice).
+    - apply_bottom_angle (bool)     : Whether to apply a bottom angle to the racetrack.
+    - bottom_angles (numpy.ndarray) : 1D Array of bottom angles.
+    - v_s_factors (numpy.ndarray)   : 1D Array of velocity factors.
+    - pivot_point (tuple)           : The pivot point for the simulation.
+    - samples (int)                 : The number of samples.
+    - final_skyr_No (int)           : The final number of skyrmions.
+    - t_max (float)                 : The maximum simulation time in nanoseconds.
+    - t_relax_skyr (float)          : Relaxation time for skyrmions.
+    - t_relax_no_skyr (float)       : Relaxation time without skyrmions.
+    - t_circ_buffer (float)         : Circular buffer time.
+    - No_sim_img (int)              : The number of simulation images.
+    - cc_steps (int)                : The number of current calculation steps.
+    - len_circ_buffer (int)         : Length of the circular buffer.
+    - time_per_img (float)          : Time per image.
+    - t_last_skyr_frac (float)      : Fraction of time until all skyrmions are set.
+    - save_pics (bool)              : Whether to save pictures.
+    - save_npys (bool)              : Whether to save numpy arrays.
+    - save_npy_end (bool)           : Whether to save numpy arrays at the end.
+    - track_radius (bool)           : Whether to track the radius.
+    - check_q (bool)                : Whether to check the topological charge.
+    - check_variance (bool)         : Whether to check the variance.
+    - check_skyrmion_presence (bool): Whether to check for skyrmion presence.
+    - critical_variance (float)     : Critical variance value.
+    - max_error (float)             : Maximum error allowed.
+    - t_pics (numpy.ndarray)        : The times at which a picture is saved.
+    - steps_per_avg (int)           : The number of steps per average calculation.
+    - learning_rate (numpy.ndarray) : The learning rate for the simulation.
+    - smallest_error_yet (float)    : The smallest error encountered so far.
+    - cons_reach_threashold (int)   : The threshold for consecutive reaches.
 
-    Methods:
-    - __init__(): Initializes the simulation.
-    - calc_steps_until_save_for_avg(): Calculates the number of steps until save for average.
-    - tanhfit(x): Fits the hyperbolic tangent function.
-    - compile_kernel(): Compiles the kernel.
+    ATTRIBUTES INITIALIZED IN __init__:
+    dt (float)                      : Time step for the simulation, adjusted based on the calculation method.
+    steps_total (int)               : Total number of steps in the simulation.
+    steps_per_pic (int)             : Number of steps between each picture taken during the simulation.
+    steps_per_avg (int)             : Number of steps per averaging interval.
+    atomistic_upscaling_factor (int): Upscaling factor for atomistic simulations.
+
+    METHODS                                      : 
+    - __init__()                                 : Initializes the simulation parameters.
+    - calc_steps_per_avg()                       : Calculates the number of steps per average.
+    - spa_guess(x)                               : Provides an initial guess for steps per average calculation.
+    - compile_kernel(current_ext_field)          : Compiles the CUDA kernel with the given external field.
+    - get_kernel_functions(mod)                  : Retrieves the kernel functions from the compiled module.
     """
 
     # ---------------------------------------------------------------Attributes: Basic Sim Params-------------------------------------------------------------------
-    # bottom_angles = np.linspace(2.91, 3.49, 30, endpoint=True)
-    # v_s_factors = np.linspace(5, 34, 30, endpoint=True)
-    sim_type = "x_current"  # or "skyrmion_creation" or "wall_retention" or "wall_retention_new" or "wall_ret_test" or "wall_ret_test_new" or "angled_vs_comparison"
-    # or "angled_wall_comparison" or "x_current" or "creation_gate" or "antiferromagnet_simulation" or "pinning_tests"
-    # or "first_results_replica" or "wall_retention_reverse_beta" "ReLU" "ReLU_larger_beta" "ReLU_changed_capacity"...
-    model_type = "atomistic"  # "atomistic" (hexagonal lattice) or "continuum" (implicating quadratic lattice)
-    apply_bottom_angle = False
-    bottom_angles = np.array([0])
-    v_s_factors = np.array([25])
-    pivot_point = (250, 100)
-    samples = bottom_angles.shape[0] * v_s_factors.shape[0]
-    final_skyr_No = 1
-    # top = 1
-    # t_max = (final_skyr_No + 1) * top
-    t_max = 1 # 50
-    t_relax_skyr = 0#.1
-    t_relax_no_skyr = 0.3
-    t_circ_buffer = 0.01
-    No_sim_img = 20
-    cc_steps = 600000
-    len_circ_buffer = min(max(int(t_circ_buffer * No_sim_img / t_max), 5), 50)
-    time_per_img = t_max / No_sim_img
-    t_last_skyr_frac = 1
-    save_pics = True
-    save_npys = False
-    save_npy_end = True
-    track_radius = True
-    check_q = True
-    check_variance = True
+    # SIMULATION TYPES: "skyrmion_creation" or "wall_retention" or "wall_retention_new" or "wall_ret_test" or "wall_ret_test_new" or "angled_vs_comparison" or
+    # SIMULATION TYPES: "angled_wall_comparison" or "x_current" or "creation_gate" or "antiferromagnet_simulation" or "pinning_tests" or
+    # SIMULATION TYPES: "first_results_replica" or "wall_retention_reverse_beta" "ReLU" "ReLU_larger_beta" "ReLU_changed_capacity"...
+    sim_type                = "x_current"
+    model_type              = "atomistic"  # "atomistic" (hexagonal lattice) or "continuum" (implicating quadratic lattice)
+    apply_bottom_angle      = False
+    bottom_angles           = np.array([0])
+    v_s_factors             = np.array([25])
+    pivot_point             = (250, 100)
+    samples                 = bottom_angles.shape[0] * v_s_factors.shape[0]
+    final_skyr_No           = 1
+    t_max                   = 1
+    t_relax_skyr            = 0
+    t_relax_no_skyr         = 0.3
+    t_circ_buffer           = 0.01
+    No_sim_img              = 20
+    cc_steps                = 600000
+    len_circ_buffer         = min(max(int(t_circ_buffer * No_sim_img / t_max), 5), 50)
+    time_per_img            = t_max / No_sim_img
+    t_last_skyr_frac        = 1
+    save_pics               = True
+    save_npys               = False
+    save_npy_end            = True
+    track_radius            = True
+    check_q                 = True
+    check_variance          = True
     check_skyrmion_presence = True
-    critical_variance = 1e-6    # 1e-7
-    max_error = None
-
-    t_pics = np.linspace(0, t_max, No_sim_img + 1, endpoint=True)[1:]
-    steps_per_avg = 1  # Default
-    learning_rate = np.array([1, 1])
-    smallest_error_yet = 1000
-    cons_reach_threashold = 10
+    critical_variance       = 1e-6
+    max_error               = None
+    t_pics                  = np.linspace(0, t_max, No_sim_img + 1, endpoint=True)[1:]
+    steps_per_avg           = 1
+    learning_rate           = np.array([1, 1])
+    smallest_error_yet      = 1000
+    cons_reach_threashold   = 10
 
     # Berechnung der Anzahl an Bildern, nach denen je ein Skyrmion gesetzt wird
     if not final_skyr_No == 0:
@@ -431,62 +354,80 @@ class sim:
 
     @classmethod
     def __init__(cls):
-        # 0.000051 --> rk4; 0.0000034 --> euler; 0.000018 --> heun ---------------> MAXIMA
+        """
+        INFO(max timesteps for each calculation method)
+        - "euler": Can be used with a max time step of 0.0000033.
+        - "rk4"  : Can be used with a max time step of 0.000051.
+        - "heun" : Can be used with a max time step of 0.000018.
+        """
         if spin.calculation_method == "euler":
             cls.dt = 0.0000033 / 1.8
         elif spin.calculation_method == "rk4":
             cls.dt = 0.000051 / 1.8
         elif spin.calculation_method == "heun":
-            cls.dt = 0.000018  # 40     /     0.000001
+            cls.dt = 0.000018
 
-        cls.steps_total = int(cls.t_max / cls.dt)
-        cls.steps_per_pic = int(cls.steps_total / len(cls.t_pics))
-
-        cls.steps_per_avg, cls.steps_total = cls.calc_steps_per_avg()  # if too big does not work bis 9000 geht scheinbar, 30000 nicht
+        # some additional parameters where dt is needed
+        cls.total_steps   = int(cls.t_max / cls.dt)
+        cls.steps_per_pic = int(cls.total_steps / len(cls.t_pics))
+        cls.steps_per_avg, cls.total_steps = cls.calc_steps_per_avg()
 
         # adjust dt to have the same t_max as before:
-        cls.dt = cls.t_max / cls.steps_total
-        
-        if sim.model_type == "atomistic":
-            sim.atomistic_upscaling_factor = 5
+        cls.dt = cls.t_max / cls.total_steps
 
     @classmethod
     def calc_steps_per_avg(cls):
-        # Initial guess for steps per average calculation
-        steps_per_avg_guess = cls.spa_guess(cls.steps_total)
-
-        logging.warning(f"Initial guess for steps per average: {steps_per_avg_guess}")
+        """
+        INFO:
+            if output of this function too big, simulation does not work ~ 9000 works
+            sa = steps until another picture is saved for averages -> Steps per Average
+        """
+        # first guess for steps per average
+        sa_guess = cls.spa_guess(cls.total_steps)
 
         # Refining guess to ensure total steps are divisible and maintain a minimum frequency ratio
-        while cls.steps_total % steps_per_avg_guess != 0 or cls.steps_per_pic / steps_per_avg_guess < 1:
-            steps_per_avg_guess -= 1
+        while cls.total_steps % sa_guess != 0 or cls.steps_per_pic / sa_guess < 1:
+            sa_guess -= 1
 
-        # Calculating the actual total number of steps to verify against the steps total
-        actual_steps_calculation = lambda spag: (int(cls.steps_per_pic / spag)) * (spag + 1) * len(cls.t_pics)
-        actual_total_steps = actual_steps_calculation(steps_per_avg_guess)
+        # Calculating revised total steps based on sa_guess to verify against the steps total
+        total_step_fn       = lambda spag: (int(cls.steps_per_pic / spag)) * (spag + 1) * len(cls.t_pics)
+        revised_total_steps = total_step_fn(sa_guess)
 
         # Adjust the steps_per_avg_guess upwards until the actual total steps meet or exceed the required steps_total
-        while actual_total_steps < cls.steps_total:
-            steps_per_avg_guess += 1
-            actual_total_steps = actual_steps_calculation(steps_per_avg_guess)
+        while revised_total_steps < cls.total_steps:
+            sa_guess            += 1
+            revised_total_steps  = total_step_fn(sa_guess)
 
-        # Decrement once to ensure we don't exceed the initial steps_total constraint after the final adjustment
-        # steps_per_avg_guess -= 1
-
-        return steps_per_avg_guess, actual_total_steps
+        return sa_guess, revised_total_steps
 
     @staticmethod
     def spa_guess(x):
-        a = x / 2000
-        d = x / 2000
         # Adjust b and c based on observations.
-        b = 1e-6
-        c = -5
+        a     = x / 2000
+        d     = x / 2000
+        b     = 1e-6
+        c     = -5
         value = a * np.tanh(b * x + c) + d
         return max(1, int(value))
 
     @staticmethod
     def compile_kernel(current_ext_field):
+        """
+        Compiles a CUDA kernel for skyrmion simulation with the given external field.
+        Args:
+            current_ext_field (float): The current external magnetic field value.
+        Returns:
+            tuple: A tuple containing the compiled CUDA module and the texture reference for the spin field.
+        Raises:
+            FileNotFoundError: If the kernel file cannot be found.
+            IOError          : If there is an error reading the kernel file.
+        Notes:
+            - The function reads the CUDA kernel from a file based on the current model type and calculation method.
+            - It defines several constants in the CUDA script, including physical constants and simulation parameters.
+            - The function allocates memory on the GPU and transfers necessary data arrays to the GPU.
+            - The texture reference for the spin field is set up for use in the CUDA kernel.
+        """
+
         # Get the kernel directory for the current model type and calculation method
         kernel_dir = spin.kernel_dirs[spin.calculation_method]
 
@@ -496,18 +437,18 @@ class sim:
 
         # String to include constants into the Cuda-Script ------> with constant v_s: f"__constant__ float3 v_s = {v_s};"
         GPU_constants = (
-            f"__constant__ float A = {cst.A_Field};\n"
-            f"__constant__ float DM = {cst.DM_Field};\n"
-            f"__constant__ float K = {cst.K_Field};\n"
-            f"__constant__ float B_ext = {current_ext_field};\n"
-            f"__constant__ float Temp = {cst.Temp};\n"
-            f"__constant__ float alpha = {cst.alpha};\n"
-            f"__constant__ float beta = {cst.beta};\n"
+            f"__constant__ float A        = {cst.A_Field};\n"
+            f"__constant__ float DM       = {cst.DM_Field};\n"
+            f"__constant__ float K        = {cst.K_Field};\n"
+            f"__constant__ float B_ext    = {current_ext_field};\n"
+            f"__constant__ float Temp     = {cst.Temp};\n"
+            f"__constant__ float alpha    = {cst.alpha};\n"
+            f"__constant__ float beta     = {cst.beta};\n"
             f"__constant__ float gamma_el = {cst.gamma_el};\n"
-            f"__constant__ float dt = {sim.dt:.9f};\n"
-            f"__constant__ int size_x = {spin.x_size};\n"
-            f"__constant__ int size_y = {spin.y_size};\n"
-            f"__constant__ int No_NNs = {cst.NNs};\n"
+            f"__constant__ float dt       = {sim.dt:.9f};\n"
+            f"__constant__ int size_x     = {spin.x_size};\n"
+            f"__constant__ int size_y     = {spin.y_size};\n"
+            f"__constant__ int No_NNs     = {cst.NNs};\n"
             f"__constant__ float NN_vec[{cst.NN_vecs.size}];\n"
             f"__constant__ int NN_pos_even_row[{cst.NN_pos_even_row.size}];\n"
             f"__constant__ int NN_pos_odd_row[{cst.NN_pos_odd_row.size}];\n"
@@ -517,15 +458,16 @@ class sim:
 
         mod = SourceModule(GPU_constants + kernel)
 
+        # set the texture reference for the spin field
         texref = mod.get_texref("v_s")
         texref.set_array(spin.cuda_v_s)
         cuda.mem_alloc(spin.v_s.nbytes)
 
         # send the NN array and the DM array to the GPU
-        NN_vec_id = mod.get_global("NN_vec")[0]
+        NN_vec_id          = mod.get_global("NN_vec")[0]
         NN_pos_even_row_id = mod.get_global("NN_pos_even_row")[0]
-        NN_pos_odd_row_id = mod.get_global("NN_pos_odd_row")[0]
-        DM_vec_id = mod.get_global("DM_vec")[0]
+        NN_pos_odd_row_id  = mod.get_global("NN_pos_odd_row")[0]
+        DM_vec_id          = mod.get_global("DM_vec")[0]
         cuda.memcpy_htod(NN_vec_id, cst.NN_vecs)
         cuda.memcpy_htod(NN_pos_even_row_id, cst.NN_pos_even_row.astype(np.int32))
         cuda.memcpy_htod(NN_pos_odd_row_id, cst.NN_pos_odd_row.astype(np.int32))
@@ -535,6 +477,18 @@ class sim:
 
     @staticmethod
     def get_kernel_functions(mod):
+        """
+        Retrieves the kernel functions for the skyrmion simulation based on the specified calculation method.
+        Args:
+            mod: The module containing the kernel functions.
+        Returns:
+            tuple: A tuple containing:
+                - simSteps: A list of kernel functions for the simulation steps, or a single kernel function if using the Euler method.
+                - avgStep: The kernel function for averaging steps.
+                - q_topo: The kernel function for calculating the topological charge.
+        Raises:
+            AttributeError: If the specified calculation method is not recognized.
+        """
         simSteps = None
         if spin.calculation_method == "rk4":
             simSteps = [
@@ -555,18 +509,9 @@ class sim:
             ]
 
         avgStep = mod.get_function("AvgStep")
-        q_topo = mod.get_function("CalQTopo")
+        q_topo  = mod.get_function("CalQTopo")
 
         return simSteps, avgStep, q_topo
-
-    @staticmethod
-    def run_simulation_steps(simulation_step, args):
-        for arg_set in args:
-            simulation_step(
-                *arg_set,
-                block=(spin.block_dim_x, spin.block_dim_y, 1),
-                grid=(spin.grid_dim_x, spin.grid_dim_y, 1),
-            )
 
 
 class spin:
@@ -607,13 +552,13 @@ class spin:
     # or "first_results_replica" or "wall_retention_reverse_beta"  ...
 
     # paths
-    mask_dir = "needed_files/Mask_track_free.png"
-    orig_mask_dir = mask_dir
-    j_dir = "current_temp/current.npy"
-    skyr_dir = f"needed_files/skyr_{cst.skyr_name_ext}_{sim.model_type}.npy"
+    mask_dir         = "needed_files/Mask_track_free.png"
+    orig_mask_dir    = mask_dir
+    j_dir            = "current_temp/current.npy"
+    skyr_dir         = f"needed_files/skyr_{cst.skyr_name_ext}_{sim.model_type}.npy"
     kernel_dir_euler = "kernels/ss_kernel_euler.c"
-    kernel_dir_heun = "kernels/ss_kernel_heun.c"
-    kernel_dir_rk4 = "kernels/ss_kernel_rk4.c"
+    kernel_dir_heun  = "kernels/ss_kernel_heun.c"
+    kernel_dir_rk4   = "kernels/ss_kernel_rk4.c"
 
     kernel_dirs = {"euler": kernel_dir_euler, "heun": kernel_dir_heun, "rk4": kernel_dir_rk4}
 
@@ -1031,6 +976,33 @@ class spin:
         cls.mask = np.ascontiguousarray(
             np.array(np.array(Image.open(dir), dtype=bool)[:, :, 0]).T[:, ::-1]
         )  # [:,:,0] for rgb to grayscale, .T for swapping x and y axis, [::-1] for flipping y axis
+    
+    @classmethod
+    def norm(cls, array):
+        """
+        Normalizes the given array.
+
+        Parameters:
+        array (numpy array): The array to normalize.
+
+        Returns:
+        numpy array: The normalized array.
+        """
+        array[cls.mask] /= value(array[cls.mask], axis=-1, keepdims=True)
+        return array
+
+    @classmethod
+    def masking(cls, array):
+        """
+        Masks the given array.
+
+        Parameters:
+        array (numpy array): The array to mask.
+
+        Returns:
+        numpy array: The masked array.
+        """
+        return array * cls.mask[..., np.newaxis]
 
     @classmethod
     def set_constant_v_s(cls, v_s_sample_factor, angle=0):
@@ -1268,7 +1240,7 @@ class spin:
         # spinfield = math.rnd_vecs((spin.field_size_x, spin.field_size_y))
 
         # mask and norm the spins
-        spinfield = math.mask(math.norm(spinfield))
+        spinfield = spin.masking(spin.norm(spinfield))
 
         # set boundary
         if spin.boundary == "ferro":
@@ -1313,7 +1285,38 @@ class spin:
         elif cls.calculation_method == "heun":
             cls.pot_next_spin_id.free()
         cuda.Context.synchronize()
+    
+    @staticmethod
+    def sigmoid(x, exp_Factor=-20):
+        """
+        Calculates the sigmoid function for a given input.
 
+        Parameters:
+        x (float): The input value.
+        exp_Factor (float): The exponential factor. Default is -20.
+
+        Returns:
+        float: The output of the sigmoid function for the given input.
+        """
+        return 1 / (1 + np.exp(exp_Factor * (min(x, 1) - 1)))
+
+    @staticmethod
+    def rnd_vecs(shape):
+        """
+        Generates random vectors on the surface of a unit sphere for each point in the given shape.
+
+        Parameters:
+        shape (tuple): Shape of the array (e.g., (100, 200)).
+
+        Returns:
+        numpy array: A shape[0] x shape[1] x 3 array of random vectors.
+        """
+        # Number of points
+
+        vectors = uniform_direction(3).rvs(shape[0] * shape[1], random_state=np.random.default_rng())
+        vectors = vectors.reshape(shape[0], shape[1], 3)
+        return vectors
+    
     @staticmethod
     def set_ferromagnetic_boundary(spinfield):
         """
@@ -1452,14 +1455,14 @@ class spin:
                     # Abfrage, ob der Spin in spins liegt
                     if 0 <= idx < spin.x_size and 0 <= idy < spin.y_size:
                         # Es wird zwischen der vorherigen Spinkonfigeruration und dem Skyrmion mittels des Abstandes und einer Sigmoid-Funktion interpoliert
-                        sig_skyr = (-2 * math.sigmoid(dist)) + 1
+                        sig_skyr = (-2 * spin.sigmoid(dist)) + 1
                         sig_spinfield = 1 - sig_skyr
                         spins[idx, idy] = skyrmion[i, j] * sig_skyr + spins[idx, idy] * sig_spinfield
                         # # Normalisierung der Spins
                         # spins[idx, idy] = spins[idx, idy] / np.sqrt(np.dot(spins[idx, idy], spins[idx, idy]))
 
         # norm and mask the spins
-        spins = math.mask(math.norm(spins))
+        spins = spin.masking(spin.norm(spins))
 
         # set boundary ferro if necessary
         if spin.boundary == "ferro":
@@ -1738,7 +1741,7 @@ class output:
         logging.info(f"max Time: {sim.t_max:.4g} ns")
         logging.info(f"No sim img: {sim.No_sim_img}")
         logging.info(f"dt: {sim.dt:.4g} ns")
-        logging.info(f"steps_total: {sim.steps_total}")
+        logging.info(f"steps_total: {sim.total_steps}")
         logging.info(f"time_per_img: {sim.time_per_img:.4g} ns")
         if sim.len_circ_buffer == 30:
             logging.warning(f"len_circ_buffer: {sim.len_circ_buffer} --> timestep too small for accurate automatic shutdown, set manually")
@@ -1802,6 +1805,7 @@ class output:
         # logging.info(f"v_s: {spin.v_s} m/s")
         # logging.info("Output at _[ns]:", *np.around(checkpoint_times, 8), sep="\n")
         if sim.model_type == "atomistic":
+            output.atomistic_upscaling_factor = 5
             cls.upscaling_indices, cls.locations = output.calculate_upscaling_array(spin.x_size, spin.y_size)
 
         # Get the seismic colormap
@@ -1879,7 +1883,7 @@ class output:
         Determine the upscaling locations that each pixel in the original hex array will be upscaled to."""
 
         logging.info(
-            f"CALCULATING UPSCALING ARRAY FOR ATOMISTIC UPSCALING FACTOR {sim.atomistic_upscaling_factor} and FIELD SIZE {field_size_x} x {field_size_y}\n"
+            f"CALCULATING UPSCALING ARRAY FOR ATOMISTIC UPSCALING FACTOR {output.atomistic_upscaling_factor} and FIELD SIZE {field_size_x} x {field_size_y}\n"
         )
 
         # Create arrays for i and j indices
@@ -1894,8 +1898,8 @@ class output:
 
         # Create arrays for i and j indices
         i, j = (
-            np.indices((sim.atomistic_upscaling_factor * field_size_x, math.ceil(field_size_y * sim.atomistic_upscaling_factor * np.sqrt(3) / 2)))
-            / sim.atomistic_upscaling_factor
+            np.indices((output.atomistic_upscaling_factor * field_size_x, math.ceil(field_size_y * output.atomistic_upscaling_factor * np.sqrt(3) / 2)))
+            / output.atomistic_upscaling_factor
         )
 
         # Combine x and y values into a single array
@@ -1913,7 +1917,7 @@ class output:
 
         # Reshape the indices to match the shape of the upscaled array
         indices = indices.reshape(
-            field_size_x * sim.atomistic_upscaling_factor, math.ceil(field_size_y * sim.atomistic_upscaling_factor * np.sqrt(3) / 2)
+            field_size_x * output.atomistic_upscaling_factor, math.ceil(field_size_y * output.atomistic_upscaling_factor * np.sqrt(3) / 2)
         )
 
         # Use the indices to fill the upscaled indices array
