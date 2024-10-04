@@ -237,9 +237,10 @@ class cst:
             cls.NN_pos_odd_row = cls.NN_pos_even_row
 
         cls.rotate_anticlock = rotate_anticlock
-        cls.DM_vecs = cst.rotate_vecs_90(cls, cls.NN_vecs)
+        cls.DM_vecs = cst.rotate_vecs_90(cls.NN_vecs)
 
-    def rotate_vecs_90(self, vecs):
+    @classmethod
+    def rotate_vecs_90(cls, vecs):
         """
         Rotate the given vectors by 90 degrees either clockwise or anticlockwise, depending on the value of `rotate_anticlock`.
 
@@ -249,7 +250,7 @@ class cst:
         Returns:
             numpy.ndarray: A 2D array of shape (N, 3) containing the rotated vectors.
         """
-        if not self.rotate_anticlock:
+        if not cls.rotate_anticlock:
             return np.ascontiguousarray(np.dot(cst.rot_matrix_90, vecs.T).T)
         else:
             return np.ascontiguousarray(np.dot(cst.rot_matrix_90.T, vecs.T).T)
@@ -394,6 +395,9 @@ class sim:
         cls.v_s_positioning = False
         cls.v_s_factor      = 200
         cls.v_s             = np.empty((cls.x_size, cls.y_size, 2), dtype=np.float32)
+
+        # only needed for wall_ret_test_new
+        cls.distances = np.array([])
 
         if sim.sim_type == "wall_retention":
             # set spinfield Mask_track_test_5.png
@@ -1341,6 +1345,9 @@ class spin:
                         dist = value([(x_pos - skyr_center_x), (j - skyr_center_y) * np.sqrt(3) / 2]) / (skyr_radius_set)
                     elif sim.model_type == "continuum":
                         dist = value([(i - skyr_center_x), (j - skyr_center_y)]) / (skyr_radius_set)
+                    else:
+                        dist = "undefined"
+                        raise ValueError("Invalid model type. Please choose either 'atomistic' or 'continuum'.")
 
                     # Abfrage, ob der Spin in spins liegt
                     if 0 <= idx < sim.x_size and 0 <= idy < sim.y_size:
@@ -1381,11 +1388,8 @@ class spin:
         Returns:
         float: The radius R of the skyrmion.
         """
-        try:
-            if sim.no_init_skyr_params:
-                return 0, 0
-        except:
-            None
+        if getattr(sim, 'no_init_skyr_params', False):
+            return 0, 0
 
         y, x = np.indices(m_z.shape)
         if sim.model_type == "continuum":
@@ -1696,7 +1700,7 @@ class output:
     # q_location_tracker = np.zeros((sim.No_sim_img, 5))
 
     max_parallel_processes = 10
-    plot_processes = [] if sim.model_type == "atomistic" else None
+    plot_processes = []
     ctrl_c_counter = 0
 
     # ---------------------------------------------------------------Methods-------------------------------------------------------------------
@@ -1857,7 +1861,7 @@ class output:
         return fds
 
     @staticmethod
-    def configure_logging(dest_dir=None):
+    def configure_logging(dest_dir="None"):
         """
         Configures the logging settings for the simulation.
 
@@ -2085,11 +2089,14 @@ class output:
         fig, ax = plt.subplots(figsize=(10, 6))
 
         # Define the extent of the imshow plot to match the range of your locations
-        extent = np.array(
-            [locations_x.min() - pic_offset, locations_x.max() + 0.5 - pic_offset, locations_y.min() - pic_offset, locations_y.max() + 1 - pic_offset]
+        extent = (
+            float(locations_x.min() - pic_offset), 
+            float(locations_x.max() + 0.5 - pic_offset), 
+            float(locations_y.min() - pic_offset), 
+            float(locations_y.max() + 1 - pic_offset)
         )
 
-        plt.imshow(hex_array_upscaled.T[::-1, :], cmap="seismic", alpha=0.5, extent=list(extent))
+        plt.imshow(hex_array_upscaled.T[::-1, :], cmap="seismic", alpha=0.5, extent=extent)
 
         ax.set_xlabel("X")
         ax.set_ylabel("Y")
@@ -2141,7 +2148,7 @@ class output:
     @staticmethod
     def update_postfix_dict(postfix_dict, index_t, skyrs_set, no_subprocesses):
         # Uptade the general values
-        postfix_dict["Q"] = round(output.stat_tracker[index_t]["topological_charge"])
+        postfix_dict["Q"] = round(float(output.stat_tracker[index_t]["topological_charge"]))
         postfix_dict["No set"] = skyrs_set
 
         # Count skyrmions on the left and right
@@ -2149,8 +2156,8 @@ class output:
         # Update for single or multiple skyrmions
         if sim.final_skyr_No <= 1:
             postfix_dict["(x, y)"] = (
-                round(output.stat_tracker[index_t]["x0"], 4),
-                round(output.stat_tracker[index_t]["y0"], 4),
+                round(float(output.stat_tracker[index_t]["x0"]), 4),
+                round(float(output.stat_tracker[index_t]["y0"]), 4),
             )
             # print("updating this shit")
             # print(output.stat_tracker[index_t]["r1"])
@@ -2311,6 +2318,25 @@ def simulate(sim_no, angle, v_s_fac):
     # write the relaxed init spins to evolved spins
     GPU.spins_evolved = relaxed_init_spins.copy()
 
+    # error avoidance for positioning part:
+    v_s_x = 0
+    v_s_y = 0
+    delta_r_native = 0
+    temp_last_skyr_spinfield = last_skyr_spinfield = GPU.spins_evolved.copy()
+    skyr_elims = 0
+    index_now = 0
+    start_v_s_x_y_deletion_index = 0
+    error_streak_counter = 0
+    v_s = np.array([])
+    t_one_pos = 0
+    smallest_error_yet = 1e10
+    del_x_by_v_s = 1e10*np.ones(2)
+    learning_rate = 1*np.ones(2)
+    lr_adjustment = 0.1
+    reverts = 0
+    reset = False
+    t = 0
+
     # eigentliche Simulationsschleife
     with tqdm(
         total=len(sim.t_pics),
@@ -2444,7 +2470,7 @@ def simulate(sim_no, angle, v_s_fac):
                         output.stat_tracker[index_t]["w1"] = None
                 else:
                     # Find skyrmion centers and save their coordinates
-                    centers = spin.find_skyr_center(tracker_array)  # Use the method you define for finding centers
+                    centers = np.array(spin.find_skyr_center(tracker_array))  # Use the method you define for finding centers
 
                     if centers.shape[0] >= sim.final_skyr_No:
                         logging.warning(f"Too many skyrmion centers found at {t:011.6f} ns, breaking loop")
@@ -2628,7 +2654,7 @@ def simulate(sim_no, angle, v_s_fac):
                                     sim.distances = np.concatenate((old_distances, new_distances))
 
                                     # set the skyr_set_x to the new position
-                                    spin.skyr_set_x = sim.distances[index_now]
+                                    spin.skyr_set_x = int(sim.distances[index_now])
 
                                     logging.warning(f"skyr_set_x now: {spin.skyr_set_x}")
                                     logging.warning(f"new distances: {new_distances}")
@@ -2660,7 +2686,7 @@ def simulate(sim_no, angle, v_s_fac):
 
                         # CALCULATE NEW V_S
                         v_s_x = prev_v_s_x - (error[0]) / del_x_by_v_s[0] * learning_rate[0] * lr_adjustment
-                        v_s_y = prev_v_s_y - (error[1]) / del_x_by_v_s[0] * learning_rate[1] * lr_adjustment
+                        v_s_y = prev_v_s_y - (error[1]) / del_x_by_v_s[1] * learning_rate[1] * lr_adjustment    #! del_x_by_v_s[0] war vorher
 
                         logging.info(f"at t= {t:.6g} v_s_x, v_s_y, error[0], error[1], learning_rate[0]: {v_s_x, v_s_y, error[0], error[1], learning_rate[0]}")
 
@@ -2823,7 +2849,7 @@ def simulate(sim_no, angle, v_s_fac):
 
                                 # get the new position
                                 index_now = np.where(sim.distances == spin.skyr_set_x)[0][0]
-                                spin.skyr_set_x = sim.distances[index_now + 1]
+                                spin.skyr_set_x = int(sim.distances[index_now + 1].item())
                                 logging.warning(f"position {index_now + 1} of {len(sim.distances)} reached")
                                 logging.warning(f"NEW X: {spin.skyr_set_x}")
 
@@ -2867,7 +2893,7 @@ def simulate(sim_no, angle, v_s_fac):
 
             circular_spinfield_buffer.append(GPU.spins_evolved.copy())
             if index_t > 0 and sim.check_variance:
-                variance = np.max(np.var(np.array(circular_spinfield_buffer), axis=0))
+                variance = np.max(np.var(np.array(circular_spinfield_buffer, dtype=np.float32), axis=0))
                 if variance < sim.critical_variance and skyr_counter == sim.final_skyr_No:
                     logging.warning("Spins are not moving anymore")
                     break

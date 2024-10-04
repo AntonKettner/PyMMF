@@ -85,7 +85,7 @@ def fetch_traj_q_file(fetch_dir, fetch_file="traj_q.npy"):
     return np.load(traj_q_file[0])
 
 
-def current_vs_distance_plot(fetch_dir, fetch_file, dest_dir, dest_file="angle_distance_overhaul_new.png"):
+def current_vs_distance_plot(fetch_dir, dest_dir, dest_file="angle_distance_overhaul_new.png", fetch_file="traj_q.npy"):
     
     traj_q = fetch_traj_q_file(fetch_dir, fetch_file)
 
