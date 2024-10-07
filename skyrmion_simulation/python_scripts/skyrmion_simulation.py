@@ -21,6 +21,7 @@ import time
 import math
 import collections
 import multiprocessing
+import argparse as ap
 
 # Third party imports
 import numpy as np  # Das PIL - Paket wird benutzt um die Maske zu laden
@@ -144,7 +145,6 @@ class cst:
     coords = {"x": 0, "y": 1, "z": 2}
     rot_matrix_90 = np.array([[0, 1, 0], [-1, 0, 0], [0, 0, 1]], dtype=np.float32)  # Rotation Matrix to create the DM-vecs
     Temp = 4  # in K
-    v_s_to_j_c_factor = -2 * e / (a**3 * p)
 
     # # Konstanten Schaeffer 2018 from Romming Pd/Fe bilayer on Ir(111)
     A_density = 2e-12  # Austauschwechselwirkung in J/m
@@ -156,39 +156,8 @@ class cst:
     K_density = K_mu  # - mu_0 * M_s**2 / 2
     mu_s = 3 * mu_b
     skyr_name_ext = "schaeffer_1.5"
+    r_skyr = 1.393 # in nm
 
-
-    # -------------my Conversion to Effective B_field constants in a 2D QUADRATIC LATTICE from Micromagnetic Constants -----------------------
-
-    B_a_quadr = 4 * A_density / (a**2 * M_s) * (1 / 2)
-
-    B_d_quadr = 2 * DM_density / (a * M_s) * (1 / 2)
-
-    B_k_quadr = K_density / M_s
-
-    # -------------Hagemeister 2018 Conversion zu atomistischen B_Feld-Konstanten (hexagonal lattice) -----------------------
-
-    B_a_hex = 4 * A_density / (a**2 * M_s) * (1 / 3)
-
-    B_d_hex = 2 * DM_density / (a * M_s) * (1 / 3)
-
-    B_k_hex = K_density / M_s
-
-    # -------------my Conversion zu atomistischen Energie-Konstanten die funktioniert (quadr lattice)-----------------------
-
-    E_a_quadr = 4 * A_density * mu_s / (a**2 * M_s) * (1 / 2)
-
-    E_d_quadr = 2 * DM_density * mu_s / (a * M_s) * (1 / 2)
-
-    E_k_quadr = K_density * mu_s / M_s
-
-    # -------------Hagemeister 2018 Conversion zu atomistischen Energie-Konstanten (hexagonal lattice)-----------------------
-
-    E_a_hex = 4 * A_density * mu_s / (a**2 * M_s) * (1 / 3)
-
-    E_d_hex = 2 * DM_density * mu_s / (a * M_s) * (1 / 3)
-
-    E_k_hex = K_density * mu_s / M_s
 
     @classmethod
     def __init__(cls, rotate_anticlock=False):
@@ -199,6 +168,42 @@ class cst:
             rotate_anticlock (bool, optional): If True, rotates the field collection
                 anticlockwise by 90 degrees. Defaults to False.
         """
+        
+        cls.v_s_to_j_c_factor = -2 * cls.e / (cls.a**3 * cls.p)
+
+        
+        # -------------my Conversion to Effective B_field constants in a 2D QUADRATIC LATTICE from Micromagnetic Constants -----------------------
+
+        cls.B_a_quadr = 4 * cls.A_density / (cls.a**2 * cls.M_s) * (1 / 2)
+
+        cls.B_d_quadr = 2 * cls.DM_density / (cls.a * cls.M_s) * (1 / 2)
+
+        cls.B_k_quadr = cls.K_density / cls.M_s
+
+        # -------------Hagemeister 2018 Conversion zu atomistischen B_Feld-Konstanten (hexagonal lattice) -----------------------
+
+        cls.B_a_hex = 4 * cls.A_density / (cls.a**2 * cls.M_s) * (1 / 3)
+
+        cls.B_d_hex = 2 * cls.DM_density / (cls.a * cls.M_s) * (1 / 3)
+
+        cls.B_k_hex = cls.K_density / cls.M_s
+
+        # -------------my Conversion zu atomistischen Energie-Konstanten die funktioniert (quadr lattice)-----------------------
+
+        cls.E_a_quadr = 4 * cls.A_density * cls.mu_s / (cls.a**2 * cls.M_s) * (1 / 2)
+
+        cls.E_d_quadr = 2 * cls.DM_density * cls.mu_s / (cls.a * cls.M_s) * (1 / 2)
+
+        cls.E_k_quadr = cls.K_density * cls.mu_s / cls.M_s
+
+        # -------------Hagemeister 2018 Conversion zu atomistischen Energie-Konstanten (hexagonal lattice)-----------------------
+
+        cls.E_a_hex = 4 * cls.A_density * cls.mu_s / (cls.a**2 * cls.M_s) * (1 / 3)
+
+        cls.E_d_hex = 2 * cls.DM_density * cls.mu_s / (cls.a * cls.M_s) * (1 / 3)
+
+        cls.E_k_hex = cls.K_density * cls.mu_s / cls.M_s
+
 
         NN_vec_1 = np.array([1, 0, 0])
         if sim.model_type == "atomistic":
@@ -311,10 +316,6 @@ class sim:
     """
 
     # ---------------------------------------------------------------Attributes: Basic Sim Params-------------------------------------------------------------------
-    # SIMULATION TYPES: "skyrmion_creation" or "wall_retention" or "wall_retention_new" or "wall_ret_test" or "wall_ret_test_new" or "angled_vs_comparison" or
-    # SIMULATION TYPES: "angled_wall_comparison" or "x_current" or "creation_gate" or "antiferromagnet_simulation" or "pinning_tests" or
-    # SIMULATION TYPES: "first_results_replica" or "wall_retention_reverse_beta" "ReLU" "ReLU_larger_beta" "ReLU_changed_capacity"...
-    sim_type                = "x_current"
     model_type              = "atomistic"
     calculation_method      = "heun"
     boundary                = "open"
@@ -322,7 +323,6 @@ class sim:
     bottom_angles           = np.array([0])
     v_s_factors             = np.array([25])
     pivot_point             = (250, 100)
-    samples                 = bottom_angles.shape[0] * v_s_factors.shape[0]
     final_skyr_No           = 1
     t_max                   = 1
     t_relax_skyr            = 0
@@ -330,8 +330,6 @@ class sim:
     t_circ_buffer           = 0.01
     No_sim_img              = 20
     cc_steps                = 600000
-    len_circ_buffer         = min(max(int(t_circ_buffer * No_sim_img / t_max), 5), 50)
-    time_per_img            = t_max / No_sim_img
     t_last_skyr_frac        = 1
     save_pics               = True
     save_npys               = False
@@ -340,28 +338,28 @@ class sim:
     check_variance          = True
     check_skyrmion_presence = True
     critical_variance       = 1e-6
-    t_pics                  = np.linspace(0, t_max, No_sim_img + 1, endpoint=True)[1:]
     steps_per_avg           = 1
     learning_rate           = np.array([1, 1])
     smallest_error_yet      = 1000
     cons_reach_threashold   = 10
 
-    # Berechnung der Anzahl an Bildern, nach denen je ein Skyrmion gesetzt wird
-    if not final_skyr_No == 0:
-        every__pic_set_skyr = np.floor(No_sim_img * t_last_skyr_frac / final_skyr_No)
-    else:
-        every__pic_set_skyr = No_sim_img + 1
 
     # ---------------------------------------------------------------Methods-------------------------------------------------------------------
 
     @classmethod
-    def __init__(cls):
+    def __init__(cls, sim_type="x_current"):
         """
         INFO(max timesteps for each calculation method)
         - "euler": Can be used with a max time step of 0.0000033.
         - "rk4"  : Can be used with a max time step of 0.000051.
         - "heun" : Can be used with a max time step of 0.000018.
         """
+
+        # SIMULATION TYPES: "skyrmion_creation" or "wall_retention" or "wall_retention_new" or "wall_ret_test" or "wall_ret_test_close" or "wall_ret_test_far" or 
+        # SIMULATION TYPES: "angled_vs_comparison" or "angled_wall_comparison" or "x_current" or "creation_gate" or "antiferromagnet_simulation" or "pinning_tests" or
+        # SIMULATION TYPES: "first_results_replica" or "wall_retention_reverse_beta" "ReLU" "ReLU_larger_beta" "ReLU_changed_capacity"...
+        cls.sim_type = sim_type
+
         if cls.calculation_method == "euler":
             cls.dt = 0.0000033 / 1.8
         elif cls.calculation_method == "rk4":
@@ -369,43 +367,38 @@ class sim:
         elif cls.calculation_method == "heun":
             cls.dt = 0.000018
 
-        # some additional parameters where dt is needed
-        cls.total_steps   = int(cls.t_max / cls.dt)
-        cls.steps_per_pic = int(cls.total_steps / len(cls.t_pics))
-        cls.steps_per_avg, cls.total_steps = cls.calc_steps_per_avg()
-
-        # adjust dt to have the same t_max as before:
-        cls.dt = cls.t_max / cls.total_steps
-
-        cls.mask_dir      = "needed_files/Mask_track_free.png"
-        cls.orig_mask_dir = cls.mask_dir
-        
-        # LOAD MASK
-        cls.mask = np.ascontiguousarray(
-            np.array(np.array(Image.open(cls.mask_dir), dtype=bool)[:, :, 0]).T[:, ::-1]
-        )
-        
-        cls.x_size = cls.mask.shape[0]
-        cls.y_size = cls.mask.shape[1]
-        
-        # VELOCITY FIELD V_S PROPERTIES
+        # DEFAULT VELOCITY FIELD V_S PROPERTIES
         cls.v_s_dynamic     = False
         cls.v_s_active      = True
         cls.v_s_to_wall     = False
         cls.v_s_positioning = False
         cls.v_s_factor      = 200
-        cls.v_s             = np.empty((cls.x_size, cls.y_size, 2), dtype=np.float32)
 
         # only needed for wall_ret_test_new
         cls.distances = np.array([])
 
         if sim.sim_type == "wall_retention":
-            # set spinfield Mask_track_test_5.png
-            # set spinfield Mask_track_100100atomic.png
-            # final_skyr_No = 1
-            cls.skyr_set_x = math.floor(cls.x_size - (cls.r_skyr * 1e-9 / cst.a * 1.6))
-            cls.skyr_set_x = math.floor((cls.r_skyr * 1e-9 / cst.a * 1.6))
+            # Output dir name
+            cls.name = "Thesis_Fig_9"
+            
+            # sim_vars
+            cls.tmax = 20
+            cls.No_sim_img = 1000
+            cst.beta = cst.alpha
+
+            # set the map
+            # cls.mask_dir = "needed_files/Mask_track_test_5.png"
+            cls.mask_dir = "needed_files/Mask_track_100100atomic.png"
+
+            # load the mask and get the size of the mask
+            cls.x_size, cls.y_size = cls.load_mask(cls.mask_dir)
+
+            # set skyrmion vars
+            cls.final_skyr_No = 1
+            cls.skyr_set_x = math.floor((cst.r_skyr * 1e-9 / cst.a * 1.6))
             cls.skyr_set_y = cls.y_size / 2  # 200 bei big
+
+            # v_s properties
             cls.v_s_active = False
             cls.v_s_dynamic = False
             cls.v_s_centering = False
@@ -413,7 +406,8 @@ class sim:
             cls.v_s_to_wall = False
             cls.v_s_positioning = False
 
-        if sim.sim_type == "wall_retention_new":
+        elif sim.sim_type == "wall_retention_new":
+
             # map = Mask_track_test_vert.png
             sim.apply_bottom_angle = False
             # sim.bottom_angles = np.array([83.5])
@@ -428,7 +422,7 @@ class sim:
             cls.check_variance = False
             cls.x_threashold = cls.x_size - cls.r_skyr * 1.8 / (cst.a * 1e9)
 
-        if sim.sim_type == "wall_retention_reverse_beta":
+        elif sim.sim_type == "wall_retention_reverse_beta":
             # map = Mask_track_test_vert.png
             sim.apply_bottom_angle = False
             # beta from half of alpha to double of alpha
@@ -444,7 +438,7 @@ class sim:
             cls.v_s_to_wall = True
             cls.x_threashold = cls.x_size - cls.r_skyr * 5.5
 
-        if sim.sim_type == "angled_vs_comparison":
+        elif sim.sim_type == "angled_vs_comparison":
             # map = Mask_track_test.png
             # map = Mask_track_test_atomic_step.png
             # t_max = 50, skyr No = 1, pics = 1000
@@ -481,7 +475,7 @@ class sim:
             cls.v_s_dynamic = False
             cls.v_s_centering = False
 
-        if sim.sim_type == "angled_wall_comparison":
+        elif sim.sim_type == "angled_wall_comparison":
             # map = Mask_track_test.png
             # skyr_no = 1
             sim.apply_bottom_angle = True
@@ -494,50 +488,60 @@ class sim:
             cls.v_s_dynamic = False
             cls.v_s_centering = False
 
-        if sim.sim_type == "skyrmion_creation":
-            # make sure mask path is correct #!: remove this dependency
-            # map = Mask_track_free.png
+        elif sim.sim_type == "skyrmion_creation":
+            cls.name = "Thesis_Fig_8"
+
+            # set the map
+            cls.mask_dir = "needed_files/Mask_track_free.png"
+            
+            # load the mask and get the size of the mask
+            cls.x_size, cls.y_size = cls.load_mask(cls.mask_dir)
+            
             # vary r_skyr a little bit
-            # to get beautiful results: t_max = 0.1, 1000 images
-            # cls.r_skyr = (cls.x_size + cls.y_size) / 2 / 40 / 2
-            cls.no_init_skyr_params = True
-            if cst.skyr_name_ext == "schaeffer_1.5":
-                cls.r_skyr = 2 / cst.a * 1e-9 / 10  # r = 1.5 nm --> /10 because of the algorithm also working with already set skyrmions
-            elif cst.skyr_name_ext == "martinez_2018":
-                cls.r_skyr = 15 / cst.a * 1e-9 / 10
-            cls.skyr_set_x = math.floor((cls.x_size + 1) / 2)
-            cls.skyr_set_y = math.floor((cls.y_size + 1) / 2)
-            sim.apply_bottom_angle = False
-            sim.v_s_factors = np.array([0.5])
-            sim.final_skyr_No = 1
-            # sim.t_relax_skyr = 0
-            # sim.t_relax_no_skyr = 0.2
+            cls.t_max = 0.3
+            cls.No_sim_img = 500
+
+            # set the skyrmion parameters
+            cls.final_skyr_No = 1
+            cls.r_skyr = 2 / cst.a * 1e-9 / 10  # r = 1.5 nm --> /10 because of the algorithm also working with already set skyrmions
+            cls.check_skyrmion_presence = False
+            cls.skyr_set_x = math.floor((cls.x_size) / 2)
+            cls.skyr_set_y = math.floor((cls.y_size) / 2)
+
+            # v_s properties
+            cls.v_s_factors = np.array([0.5])
             cls.v_s_active = True
             cls.v_s_dynamic = False
             cls.v_s_centering = True
             cls.v_s_to_wall = False
+            cls.apply_bottom_angle = False
 
-        if sim.sim_type == "x_current":
-            # tmax = 5, skyr No = 1, map = Mask_track_free.png
-            # tmax = 20, skyr No = 1, map = Mask_track_beta_vs_alpha.png
-            # cls.skyr_set_x = 100
-            # cls.skyr_set_y = 330
-            cls.skyr_set_x = 50
+        elif sim.sim_type == "x_current":
+            # sim_vars
+            cls.t_max = 5
+            cst.beta = cst.alpha
+            cls.No_sim_img = 20
+
+            # set the map
+            cls.mask_dir = "needed_files/Mask_track_free.png"
+
+            # load the mask and get the size of the mask
+            cls.x_size, cls.y_size = cls.load_mask(cls.mask_dir)
+
+            # set skyrmion vars
+            cls.final_skyr_No = 1
             cls.skyr_set_x = cls.x_size / 2
             cls.skyr_set_y = cls.y_size / 2
-            cst.beta = cst.alpha
-            sim.v_s_factors = np.array([1])
-            # sim.v_s_factors = np.array([3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7]) # tmax = 80, pics = 3000
-            # sim.v_s_factors = np.array([10, 12, 14])
-            sim.samples = sim.v_s_factors.shape[0]
-            cls.v_s_centering = False
+
+            # v_s properties
+            cls.v_s_factors = np.array([1])
             cls.v_s_to_wall = False
-            sim.apply_bottom_angle = False
             cls.v_s_active = True
             cls.v_s_dynamic = False
             cls.v_s_centering = False
+            cls.apply_bottom_angle = False
 
-        if sim.sim_type == "wall_ret_test":
+        elif sim.sim_type == "wall_ret_test":
             # tmax = 5, skyr No = 1, map = Mask_track_free.png
             # cls.skyr_set_x = 100
             # cls.skyr_set_y = 330
@@ -546,37 +550,35 @@ class sim:
             cst.beta = cst.alpha
             # sim.v_s_factors = np.array([0])
             sim.v_s_factors = np.array([1, 2, 3, 4, 5, 6, 7])
-            sim.samples = sim.bottom_angles.shape[0] * sim.v_s_factors.shape[0]
             sim.apply_bottom_angle = False
             cls.v_s_active = True
             cls.v_s_dynamic = False
             cls.v_s_centering = False
             cls.check_variance = True
 
-        if sim.sim_type == "wall_ret_test_new":
-            # tmax = 200, No_pics = 5000 für Deltax klein (4-1.5 r_skyr ca.) vs. 800, 5000 für Deltax groß (7 - 4 r_skyr ca.)
-            # skyr No = 1, map = Mask_track_free.png
-            # cls.skyr_set_x = 100
-            # cls.skyr_set_y = 330
+        elif sim.sim_type == "wall_ret_test_close":
+            # Output dir name
+            cls.name = "Thesis_Fig_10_close"
+
+            # sim_vars
+            # 200 für Deltax klein (4-1.5 r_skyr ca.) vs. 800 für Deltax groß (7 - 4 r_skyr ca.)
+            cls.t_max = 200
+            cls.No_sim_img = 5000
+            cst.beta = cst.alpha
+
+            # set the map
+            cls.mask_dir = "needed_files/Mask_track_free.png"
+
+            # load the mask and get the size of the mask
+            cls.x_size, cls.y_size = cls.load_mask(cls.mask_dir)
+
+            # set skyrmion vars
+            cls.final_skyr_No = 1
             cls.skyr_set_x = cls.x_size / 2
             cls.skyr_set_y = cls.y_size / 2
-            cst.beta = cst.alpha
+
+            # v_s properties
             sim.v_s_factors = np.array([0])
-            # sim.v_s_factors = np.array([-1])
-            dist_start = int(cls.x_size - 7 * cls.r_skyr * (1e-9 / cst.a))
-            dist_end = int(cls.x_size - 1.5 * cls.r_skyr * (1e-9 / cst.a))
-            # dist_start = 383
-            # dist_end = 398
-            cls.distances = np.arange(dist_start, dist_end)
-            # remove duplicates in distances
-            cls.distances = np.unique(cls.distances)
-
-            # # remove distances below 369
-            # cls.distances = cls.distances[cls.distances > 369]
-
-            sim.max_error = 0.00005
-            sim.cons_reach_threashold = 10
-            sim.samples = sim.bottom_angles.shape[0] * sim.v_s_factors.shape[0]
             sim.apply_bottom_angle = False
             cls.v_s_active = True
             cls.v_s_dynamic = False
@@ -584,7 +586,55 @@ class sim:
             cls.v_s_positioning = True
             cls.check_variance = False
 
-        if sim.sim_type == "creation_gate":
+            # set distances
+            dist_start = int(cls.x_size - 4 * cst.r_skyr * (1e-9 / cst.a))
+            dist_end = int(cls.x_size - 1.5 * cst.r_skyr * (1e-9 / cst.a))
+            cls.distances = np.arange(dist_start, dist_end)
+            cls.distances = np.unique(cls.distances)
+            sim.max_error = 0.00005
+            sim.cons_reach_threashold = 10
+            sim.samples = sim.bottom_angles.shape[0] * sim.v_s_factors.shape[0]
+
+        elif sim.sim_type == "wall_ret_test_far":
+            # Output dir name
+            cls.name = "Thesis_Fig_10_far"
+
+            # sim_vars
+            # 200 für Deltax klein (4-1.5 r_skyr ca.) vs. 800 für Deltax groß (7 - 4 r_skyr ca.)
+            cls.t_max = 800
+            cls.No_sim_img = 5000
+            cst.beta = cst.alpha
+
+            # set the map
+            cls.mask_dir = "needed_files/Mask_track_free.png"
+
+            # load the mask and get the size of the mask
+            cls.x_size, cls.y_size = cls.load_mask(cls.mask_dir)
+
+            # set skyrmion vars
+            cls.final_skyr_No = 1
+            cls.skyr_set_x = cls.x_size / 2
+            cls.skyr_set_y = cls.y_size / 2
+
+            # v_s properties
+            sim.v_s_factors = np.array([0])
+            sim.apply_bottom_angle = False
+            cls.v_s_active = True
+            cls.v_s_dynamic = False
+            cls.v_s_centering = False
+            cls.v_s_positioning = True
+            cls.check_variance = False
+
+            # set distances
+            dist_start = int(cls.x_size - 7 * cst.r_skyr * (1e-9 / cst.a))
+            dist_end = int(cls.x_size - 4 * cst.r_skyr * (1e-9 / cst.a))
+            cls.distances = np.arange(dist_start, dist_end)
+            cls.distances = np.unique(cls.distances)
+            sim.max_error = 0.00005
+            sim.cons_reach_threashold = 10
+            sim.samples = sim.bottom_angles.shape[0] * sim.v_s_factors.shape[0]
+
+        elif sim.sim_type == "creation_gate":
             # needs Mask_track_multiply.png as a mask
             # cst.a_2d_field = cst.A_Field
             # cst.d_2d_field = cst.DM_Field
@@ -599,19 +649,16 @@ class sim:
             cls.v_s_dynamic = True
             cls.v_s_centering = False
         
-        if sim.sim_type == "pinning_tests":
-            # needs Mask_track_corner_through.png as a mask -> set at 20, 80
-            # needs Mask_track_corner_stuck.png as a mask -> set at 20, 80
-            # needs Mask_track_narrowing_through.png as a mask -> set at 20, 100 (vielleicht deswegen?)
-            # needs Mask_track_narrowing_stuck.png as a mask -> set at 20, 90
+        elif sim.sim_type == "pinning_tests":
+            # cls.mask_dir = "needed_files/Mask_track_corner_through.png"
+            # cls.mask_dir = "needed_files/Mask_track_corner_stuck.png"
+            # cls.mask_dir = "needed_files/Mask_track_narrowing_through.png"
+            cls.mask_dir = "needed_files/Mask_track_narrowing_stuck.png"
             # tmax = 30
             # pics = 200
-            # cst.a_2d_field = cst.A_Field
-            # cst.d_2d_field = cst.DM_Field
-            # cst.k_2d_field = cst.K_Field
             cst.beta = cst.alpha
             cls.skyr_set_x = 20
-            cls.skyr_set_y = 90# 80 #100 # 42 #175
+            cls.skyr_set_y = 90
             sim.bottom_angles = np.array([0])
             sim.v_s_factors = np.array([2])
             sim.samples = sim.bottom_angles.shape[0] * sim.v_s_factors.shape[0]
@@ -620,13 +667,13 @@ class sim:
             cls.v_s_dynamic = True
             cls.v_s_centering = False
 
-        if sim.sim_type == "antiferromagnet_simulation":
+        elif sim.sim_type == "antiferromagnet_simulation":
+            cls.mask_dir = "needed_files/Mask_track_free.png"
+            # -> s. alternative exchange interactions
             # Konstanten Wang 2018 Pt/Co/MgO --> already inverted exchange interaction
-            # cst.a = 0.4e-9 --> manuell aendern, sonst seehr interessantes Phaenomen --> Stern
-            # cst.a_2d_field = cst.A_Field
-            # cst.d_2d_field = cst.DM_Field
-            # cst.k_2d_field = cst.K_Field
-            cls.no_init_skyr_params = True
+            cst.a = 0.4e-9
+            cst.__init__()
+            cls.track_radius = False
             cls.antiferromagnet = True
             cls.r_skyr = (cls.x_size + cls.y_size) / 2 / 10 / 2
             cls.skyr_set_x = math.floor((cls.x_size + 1) / 2)
@@ -636,9 +683,9 @@ class sim:
             cls.v_s_dynamic = False
             cls.v_s_centering = False
 
-        if sim.sim_type == "first_results_replica":
+        elif sim.sim_type == "first_results_replica":
             # First results with replica
-            # mask first_results =  Mask_track_new_3.png
+            cls.mask_dir = "needed_files/Mask_track_new_3.png"
             cls.skyr_set_x = 15
             cls.skyr_set_y = math.floor((cls.y_size + 1) / 2 - 10)
             sim.v_s_factors = np.array([6])
@@ -649,10 +696,10 @@ class sim:
             cls.v_s_centering = False
             cls.v_s_to_wall = False
 
-        if sim.sim_type == "ReLU":
+        elif sim.sim_type == "ReLU":
             # FINAL RESULTS:
-            # mask = Mask_track_test_2_new_test_bubbles_open.png
-            # mask = Mask_final_ReLU_simplification.png
+            # cls.mask_dir = "needed_files/mask = Mask_track_test_2_new_test_bubbles_open.png"
+            cls.mask_dir = "needed_files/mask = Mask_final_ReLU_simplification.png"
             # sim: Sk. No = 45/40, t_max = 70/150, No_img = 1000
             cls.skyr_set_x = 15
             cls.skyr_set_y = math.floor((cls.y_size + 1) / 2)
@@ -667,12 +714,12 @@ class sim:
             cls.v_s_to_wall = False
             cst.beta = cst.alpha / 2
 
-        if sim.sim_type == "ReLU_changed_capacity":
+        elif sim.sim_type == "ReLU_changed_capacity":
             # FINAL RESULTS:
-            # mask = Mask_track_test_2_new_test_bubbles_open.png
+            # cls.mask_dir = "needed_files/mask = Mask_track_test_2_new_test_bubbles_open.png"
             # sim: Sk. No = 45/40, t_max = 70/150, No_img = 1000
-            # mask = Mask_final_ReLU_simplification_bigger_{Number}.png
-            # mask = Mask_final_ReLU_simplification_bigger_11.png -> FINAL RESULTS 
+            # cls.mask_dir = "needed_files/Mask_final_ReLU_simplification_bigger_{Number}.png"
+            cls.mask_dir = "needed_files/Mask_final_ReLU_simplification_bigger_11.png" # -> FINAL RESULTS 
             # mask = Mask_final_ReLU_high_beta_modular.png -> for beta > alpha
             # sim: Sk. No = 30, t_max = 300, No_img = 1000
             cls.skyr_set_x = 40
@@ -713,9 +760,9 @@ class sim:
             # starting_dir = "needed_files/ReLU_cap_10.npy"
             cst.beta = cst.alpha * 2
 
-        if sim.sim_type == "ReLU_larger_beta":
+        elif sim.sim_type == "ReLU_larger_beta":
             # FINAL RESULTS:
-            # mask = Mask_final_ReLU_bigger_beta.png
+            cls.mask_dir = "needed_files/Mask_final_ReLU_bigger_beta.png"
             cls.skyr_set_x = 15
             cst.beta = cst.alpha * 2
             cls.skyr_set_y = math.floor((cls.y_size + 1) / 2 + 10)
@@ -726,7 +773,48 @@ class sim:
             cls.v_s_dynamic = True
             cls.v_s_centering = False
             cls.v_s_to_wall = False
+        
+        else:
+            raise ValueError("Invalid simulation type.")
+        
+        # calculated params from base params 
+        cls.len_circ_buffer         = min(max(int(cls.t_circ_buffer * cls.No_sim_img / cls.t_max), 5), 50)
+        cls.time_per_img            = cls.t_max / cls.No_sim_img
+        cls.samples                 = cls.bottom_angles.shape[0] * cls.v_s_factors.shape[0]
+        cls.len_circ_buffer         = min(max(int(cls.t_circ_buffer * cls.No_sim_img / cls.t_max), 5), 50)
+        cls.time_per_img            = cls.t_max / cls.No_sim_img
+        cls.t_pics                  = np.linspace(0, cls.t_max, cls.No_sim_img + 1, endpoint=True)[1:]
 
+        # Berechnung der Anzahl an Bildern, nach denen je ein Skyrmion gesetzt wird
+        if not cls.final_skyr_No == 0:
+            cls.every__pic_set_skyr = np.floor(cls.No_sim_img * cls.t_last_skyr_frac / cls.final_skyr_No)
+        else:
+            cls.every__pic_set_skyr = cls.No_sim_img + 1
+        
+        # some additional parameters where dt is needed
+        cls.total_steps   = int(cls.t_max / cls.dt)
+        cls.steps_per_pic = int(cls.total_steps / len(cls.t_pics))
+        cls.steps_per_avg, cls.total_steps = cls.calc_steps_per_avg()
+
+        # adjust dt to have the same t_max as before:
+        cls.dt = cls.t_max / cls.total_steps
+        
+        # cls.mask_dir = "needed_files/Mask_track_free.png"
+        cls.orig_mask_dir = cls.mask_dir
+
+        # load the mask and get the size of the mask
+        cls.x_size, cls.y_size = cls.load_mask(cls.mask_dir)
+        
+        # create an empty array for the current
+        cls.v_s = np.empty((cls.x_size, cls.y_size, 2), dtype=np.float32)
+    
+    @classmethod
+    def load_mask(cls, dir):
+        cls.mask = np.ascontiguousarray(
+            np.array(np.array(Image.open(dir), dtype=bool)[:, :, 0]).T[:, ::-1]
+        )  # [:,:,0] for rgb to grayscale, .T for swapping x and y axis, [::-1] for flipping y axis
+
+        return cls.mask.shape[0], cls.mask.shape[1]
 
     @classmethod
     def calc_steps_per_avg(cls):
@@ -904,9 +992,9 @@ class spin:
     j_dir            = "current_temp/current.npy"
     skyr_dir         = f"needed_files/skyr_{cst.skyr_name_ext}_{sim.model_type}.npy"
 
-    # SKYRMION PLACEMENT IN ATOMS
-    skyr_set_x = 250
-    skyr_set_y = 240
+    # # SKYRMION PLACEMENT IN ATOMS
+    # skyr_set_x = 250
+    # skyr_set_y = 240
 
     # LOADING SKYRMION
     try:
@@ -934,23 +1022,10 @@ class spin:
         """
         cls.r_skyr, cls.w_skyr = cls.find_skyr_params(cls.skyr[:, :, 2], (cls.skyr.shape[0] / 2, cls.skyr.shape[1] / 2))
 
-
-    @classmethod
-    def load_mask(cls, dir):
-        sim.mask = np.ascontiguousarray(
-            np.array(np.array(Image.open(dir), dtype=bool)[:, :, 0]).T[:, ::-1]
-        )  # [:,:,0] for rgb to grayscale, .T for swapping x and y axis, [::-1] for flipping y axis
-    
     @classmethod
     def norm(cls, array):
         """
         Normalizes the given array.
-
-        Parameters:
-        array (numpy array): The array to normalize.
-
-        Returns:
-        numpy array: The normalized array.
         """
         array[sim.mask] /= value(array[sim.mask], axis=-1, keepdims=True)
         return array
@@ -958,13 +1033,7 @@ class spin:
     @classmethod
     def masking(cls, array):
         """
-        Masks the given array.
-
-        Parameters:
-        array (numpy array): The array to mask.
-
-        Returns:
-        numpy array: The masked array.
+        Masks the given array with sim.mask.
         """
         return array * sim.mask[..., np.newaxis]
 
@@ -994,7 +1063,7 @@ class spin:
         sim.mask_dir = mask_dir
 
         # load mask
-        cls.load_mask(mask_dir)
+        sim.load_mask(mask_dir)
 
         # dynamic v_s
         if sim.v_s_dynamic and sim.v_s_active:
@@ -1044,7 +1113,7 @@ class spin:
         """
         cls.j_dir = j_dir
 
-        # dynamic v_s
+        # for dynamic v_s
         if sim.v_s_dynamic and sim.v_s_active:
 
             try:
@@ -1069,25 +1138,13 @@ class spin:
             logging.info(f"setting constant current density({bottom_angle} °, {v_s_sample_factor})")
             sim.v_s = cls.set_constant_v_s(v_s_sample_factor=v_s_sample_factor, angle=bottom_angle)
 
-        # # Correct tuple creation
-        # v_s_test = (int(sim.x_size / 2), int(sim.y_size / 2))
-
-        # # Conditional modification of the tuple
-        # if sim.sim_type == "first_results_replica" or sim.sim_type == "ReLU":
-        #     v_s_test = (v_s_test[0], int(sim.y_size / 4) + v_s_test[1])
-
-        # # Logging information
-        # try:
-        #     logging.info(f"test v_s at {v_s_test}: {tuple(sim.v_s[v_s_test[0], v_s_test[1]])} m/s\n")
-        #     logging.info(f"j_c at {v_s_test}: {cst.j_c_from_v_s(v_s=sim.v_s[v_s_test[0], v_s_test[1]])} A/m^2")
-        # except:
-        #     None
         return sim.v_s
 
 
     @classmethod
     def racetrack_bottom_angle(cls, center, angle):
         """
+        relevant for "angled_wall_comparison"
         Modifies the input mask to set values below a specified line to False.
 
         Parameters:
@@ -1099,7 +1156,7 @@ class spin:
         - Modified mask
         """
         # sets the mask to the original mask
-        cls.load_mask(sim.orig_mask_dir)
+        sim.load_mask(sim.orig_mask_dir)
 
         if sim.apply_bottom_angle:
             # ---------------------------------------------------------------Set everything below line in area to false---------------------------------------------
@@ -1149,7 +1206,7 @@ class spin:
             spinfield[::2, ::2, 2] = -1
             spinfield[1::2, 1::2, 2] = -1
 
-        # # initState some random numbers at x,y
+        # # INITSTATE SOME RANDOM NUMBERS AT X,Y
         # x = 200
         # y = 200
         # rnd_size = 10
@@ -1158,7 +1215,7 @@ class spin:
         #     (rnd_size, rnd_size)
         # )
 
-        # #initState all random numbers in x,y
+        # # INITSTATE ALL RANDOM NUMBERS IN X,Y
         # spinfield = math.rnd_vecs((spin.field_size_x, spin.field_size_y))
 
         # mask and norm the spins
@@ -1182,7 +1239,8 @@ class spin:
     @staticmethod
     def sigmoid(x, exp_Factor=-20):
         """
-        Calculates the sigmoid function for a given input.
+        Calculates the sigmoid function for a given input:
+        interpolating for insertion of new skyrmion
 
         Parameters:
         x (float): The input value.
@@ -1216,7 +1274,8 @@ class spin:
         Sets all the spins right at the edge of the mask that are now 0 in all directions to 1 in z direction.
 
         Parameters:
-        spinfield (numpy.ndarray): A 3D numpy array representing the spin field. (first two dimensions are the x and y coordinates, third dimension is the x, y, and z component of the spin)
+        spinfield (numpy.ndarray): A 3D numpy array representing the spin field.
+            (first two dimensions are the x and y coordinates, third dimension is the x, y, and z component of the spin)
 
         Returns:
         numpy.ndarray: A 3D numpy array representing the spin field with the ferromagnetic boundary set.
@@ -1242,7 +1301,7 @@ class spin:
         return spinfield
 
     @staticmethod
-    def calculate_learning_rate(old_error, new_error, t, step_size=10, base_lr=0.1, max_lr=1.1):
+    def calculate_learning_rate(t, step_size=10, base_lr=0.1, max_lr=1.1):
         """
         Adjust learning rate in a cyclical manner based on step size.
         :param old_error: Previous error value.
@@ -1259,45 +1318,7 @@ class spin:
         x = np.abs(t / step_size - 2 * cycle + 1)
         lr = base_lr + (max_lr - base_lr) * np.maximum(0, (1 - x))
 
-        # If the error stagnates or decreases minimally, boost learning rate temporarily
-        error_diff = np.abs(new_error - old_error)
-        stagnation_threshold = 0.001  # Define what you consider as 'stagnating'
-        # if np.any(error_diff < stagnation_threshold):
-        #     logging.info("Stagnation detected. Boosting learning rate temporarily.")
-        #     lr = np.minimum(lr * 1.5, max_lr)  # Temporary boost without exceeding max_lr
-        # if value(new_error) > value(old_error):
-        #     logging.info("Error increased. Reducing learning rate.")
-        #     lr = np.maximum(lr * 0.5, base_lr)  # Reduce learning rate if error increases
-
-        # logging.info(f"Adjusted Learning Rate: {lr}")
-
         return np.array([lr, lr])
-
-    # @staticmethod
-    # def calculate_learning_rate_old(old_error, new_error, t, m, v, beta1=0.95, beta2=0.990, epsilon=1e-8):
-
-    #     # Grad is the difference between new and old error.
-    #     # This is a simplistic way to derive a "gradient" based on error changes, for demonstration purposes.
-    #     grad = new_error - old_error
-
-    #     # Update biased first moment estimate. Vectorized operation for 1D arrays.
-    #     m = beta1 * m + (1 - beta1) * grad
-
-    #     # Update biased second raw moment estimate. Vectorized operation for 1D arrays.
-    #     v = beta2 * v + (1 - beta2) * (grad**2)
-
-    #     # Compute bias-corrected first moment estimate. Vectorized operation for 1D arrays.
-    #     m_hat = m / (1 - beta1**t)
-
-    #     # Compute bias-corrected second raw moment estimate. Vectorized operation for 1D arrays.
-    #     v_hat = v / (1 - beta2**t)
-
-    #     # Update the learning rates based on the Adam adjustment formula. Vectorized operation for 1D arrays.
-    #     optimal_learning_rate = past_learning_rate * (m_hat / (np.sqrt(v_hat) + epsilon))
-
-    #     logging.info(f"Optimal learning rate: {optimal_learning_rate}")
-
-    #     return optimal_learning_rate, m, v
 
     @staticmethod
     def set_skyr(spins, skyrmion, x, y):
@@ -1306,8 +1327,7 @@ class spin:
 
         Args:
         spins (numpy.ndarray): The spin configuration.
-        x (int): The x-coordinate of the center of the skyrmion.
-        y (int): The y-coordinate of the center of the skyrmion.
+        x, y (int): The x and y coordinates of the center of the skyrmion.
 
         Returns:
         numpy.ndarray: The updated spin configuration with the skyrmion placed at the specified position.
@@ -1319,6 +1339,7 @@ class spin:
         skyr_size_x = skyrmion.shape[0]
         skyr_size_y = skyrmion.shape[1]
         # skyr_radius_set = math.ceil(2 * spin.r_skyr / (cst.a * 1e9))
+        logging.info(f"r_skyr: {spin.r_skyr}")
         skyr_radius_set = spin.r_skyr * 10
 
         # skyr array boundary on each side
@@ -1370,7 +1391,7 @@ class spin:
     @staticmethod
     def skyr_profile(r, R, w):
         """
-        The tanh-like function describing the radial profile of a skyrmion with radius R and wall width w.
+        Describes the radial profile of a skyrmion with radius R and wall width w.
         same as cos(2*arctan((sinh(R/w)/sinh(r/w))))
         as 2*arctan((sinh(R/w)/sinh(r/w))) is the angle from the center of the skyrmion to the point r
         """
@@ -1386,10 +1407,8 @@ class spin:
         center (tuple): The coordinates of the center of the skyrmion (y, x).
 
         Returns:
-        float: The radius R of the skyrmion.
+        float: The radius R and wall width W of the skyrmion.
         """
-        if getattr(sim, 'no_init_skyr_params', False):
-            return 0, 0
 
         y, x = np.indices(m_z.shape)
         if sim.model_type == "continuum":
@@ -1429,9 +1448,6 @@ class spin:
     def relax_but_hold_skyr(
         spins,
         numerical_steps,
-        No,
-        bottom_angle,
-        v_s_fac,
         skyrs_set=0,
     ):
         """
@@ -1451,31 +1467,7 @@ class spin:
         """
 
         if skyrs_set > 0:
-            # calculate the number of steps for the relaxation
-            # steps_relax = int(sim.t_relax_skyr / sim.dt)
-            steps_relax = 0
-            # # Print that the relaxation is starting
-            # logging.info(f"relaxing spinfield, holding skyr for {sim.t_relax_skyr} ns")
-
-            # # create the relaxation mask excluding the center of the skyrmion from being calculated
-            # mask_relax = sim.mask.copy()
-
-            # # set the center of the skyrmion to False
-            # for i in range(sim.x_size):
-            #     for j in range(sim.y_size):
-            #         if (i - (spin.skyr_set_x)) ** 2 + (j - (spin.skyr_set_y)) ** 2 < spin.r_skyr**2:
-            #             mask_relax[i, j] = False
-
-            # # save relax_mask
-            # plt.imsave(
-            #     f"{output.dest}/sample_{No+1}_{bottom_angle}_deg_{v_s_fac}_v_s_fac/relax_mask.png",
-            #     mask_relax.T[::-1, :],
-            #     cmap="gray",
-            # )
-
-            # # replace mask with relaxation mask temporarily
-            # cuda.memcpy_htod(GPU.mask_id, mask_relax)
-
+            return spins
         else:
             steps_relax = int(sim.t_relax_no_skyr / sim.dt)
 
@@ -1709,7 +1701,7 @@ class output:
         # setting the destination for the output
         # get the last part of the mask_dir
         spinfield_name = os.path.splitext(os.path.basename(sim.mask_dir))[0]
-        cls.dest = f"OUTPUT/test_{sim.t_max/(sim.final_skyr_No+1):.2g}_beta_{cst.beta}_{spinfield_name}_{sim.model_type}_{sim.sim_type}_{sim.boundary}_{sim.calculation_method}_{cst.B_ext}_{sim.v_s_factors[0]}_{sim.bottom_angles[0]}"
+        cls.dest = f"OUTPUT/{sim.name}_{sim.sim_type}"
 
         # Erstellen der Ordnerstruktur und loeschen der alten Ordner falls vorhanden
         if os.path.exists(f"{cls.dest}"):
@@ -1761,7 +1753,7 @@ class output:
         logging.info(f"SIMULATION BASIC PARAMS for {sim.sim_type.upper()}")
         logging.info(f"No_skyrs: {sim.final_skyr_No}")
         logging.info(f"t_op: {sim.t_max/(sim.final_skyr_No+1)}")
-        if sim.sim_type == "wall_ret_test_new":
+        if sim.sim_type == "wall_ret_test_close" or sim.sim_type == "wall_ret_test_far":
             logging.warning(f"distances: {sim.distances}")
         logging.info(f"sim.t_pics[:5]: {sim.t_pics[:5]}")
         logging.info(f"save_avg: {sim.steps_per_avg}")
@@ -1773,7 +1765,7 @@ class output:
             nm_factor[1] = nm_factor[1] * np.sqrt(3) / 2
         logging.info(f"Field Shape [nm]: {sim.mask.shape * nm_factor}")
         logging.info(f"Boundary: {sim.boundary}")
-        logging.info(f"skyr init pos: ({spin.skyr_set_x}, {spin.skyr_set_y})")
+        logging.info(f"skyr init pos: ({sim.skyr_set_x}, {sim.skyr_set_y})")
         logging.info(f"skyr radius: {spin.r_skyr:.4g} [nm]")
         try:
             logging.info(f"skyr wall width: {spin.w_skyr:.4g} [nm]")
@@ -2148,6 +2140,7 @@ class output:
     @staticmethod
     def update_postfix_dict(postfix_dict, index_t, skyrs_set, no_subprocesses):
         # Uptade the general values
+        # logging.info(f"t: {output.stat_tracker[index_t]['time']:.2f} ns; index_t: {index_t}; q: {output.stat_tracker[index_t]['topological_charge']:.2f}, q_prev: {output.stat_tracker[index_t-1]['topological_charge']:.2f}")
         postfix_dict["Q"] = round(float(output.stat_tracker[index_t]["topological_charge"]))
         postfix_dict["No set"] = skyrs_set
 
@@ -2184,7 +2177,7 @@ class output:
             postfix_dict["R"] = right_count
         if sim.model_type == "atomistic":
             postfix_dict["sub_no"] = no_subprocesses
-        if sim.sim_type == "wall_ret_test_new":
+        if sim.sim_type == "wall_ret_test_close" or sim.sim_type == "wall_ret_test_far":
             postfix_dict["error"] = output.stat_tracker[index_t]["error"]
 
         return postfix_dict, left_count, right_count
@@ -2207,6 +2200,29 @@ class output:
             raise KeyboardInterrupt
 
 
+def arg_parser():
+    # Define a list of acceptable simulation types
+    acceptable_sim_types = [
+        "skyrmion_creation", "wall_retention", "wall_retention_new", "wall_ret_test",
+        "wall_ret_test_close", "wall_ret_test_far", "angled_vs_comparison", "angled_wall_comparison",
+        "x_current", "creation_gate", "antiferromagnet_simulation", "pinning_tests", "first_results_replica",
+        "wall_retention_reverse_beta", "ReLU", "ReLU_larger_beta", "ReLU_changed_capacity"
+    ]
+
+    parser = ap.ArgumentParser(description=f"run one of the following simulation types: {acceptable_sim_types}")
+
+    parser.add_argument(
+        "--sim_type",
+        type=str,
+        default="x_current",
+        choices=acceptable_sim_types,
+        help=f"the simulation type to be run, one of {acceptable_sim_types}",
+    )
+
+    # parse the arguments
+    return parser.parse_args()
+
+
 def simulate(sim_no, angle, v_s_fac):
     """
     Simulates the spin field evolution over time using CUDA.
@@ -2224,17 +2240,6 @@ def simulate(sim_no, angle, v_s_fac):
     # initialize the spinfield
     spins = spin.initialize_spinfield()
 
-    # if sim_no == 0:
-    #     global temp_old_spins
-    #     temp_old_spins = spins.copy()
-    # if sim_no == 1:
-    #     spins = temp_old_spins.copy()
-    
-    # # DEBUG
-    # # allocate memory on GPU and transfer the spinfield
-    # GPU.spins_id = cuda.mem_alloc(spins.nbytes)  # Allocate memory on GPU
-    # cuda.memcpy_htod(GPU.spins_id, spins)  # Copy spins to GPU
-
     current_B_field = cst.B_fields[sim_no]
     logging.warning(f"current B field: {current_B_field}")
 
@@ -2247,15 +2252,11 @@ def simulate(sim_no, angle, v_s_fac):
     # picture before the relaxation
     pic_dir = f"{output.dest}/sample_{sim_no+1}_{angle}_deg_{v_s_fac}_v_s_fac/z_before_relaxation.png"
     output.save_image(spins[:, :, 2], pic_dir)
-    # np_dir = f"{output.dest}/sample_{sim_no+1}_{angle}_deg_{v_s_fac}_v_s_fac/z_before_relaxation.npy"
-    # np.save(np_dir, spins[:, :, 2])
 
     # relax the spinfield without a skyrmion
-    relaxed_init_spins = spin.relax_but_hold_skyr(np.copy(spins), numerical_steps, sim_no, angle, v_s_fac, skyr_counter)
+    relaxed_init_spins = spin.relax_but_hold_skyr(np.copy(spins), numerical_steps, skyr_counter)
     pic_dir = f"{output.dest}/sample_{sim_no+1}_{angle}_deg_{v_s_fac}_v_s_fac/relaxed_z_before_skyr.png"
     output.save_image(relaxed_init_spins[:, :, 2], pic_dir)
-    # np_dir = f"{output.dest}/sample_{sim_no+1}_{angle}_deg_{v_s_fac}_v_s_fac/relaxed_z_before_skyr.npy"
-    # np.save(np_dir, relaxed_init_spins[:, :, 2])
 
     # save to relaxed_init npy
     np.save(f"{output.dest}/sample_{sim_no+1}_{angle}_deg_{v_s_fac}_v_s_fac/relaxed_init_spins.npy", relaxed_init_spins)
@@ -2269,10 +2270,6 @@ def simulate(sim_no, angle, v_s_fac):
 
     # sum up the results
     q_init = np.sum(q_temp) / (2 * np.pi)
-
-    # # save the relaxed spinfield as the first timestep
-    # pic_dir = f"{output.dest}/sample_{simulation_no+1}_{angle}_deg_{v_s_fac}_v_s_fac/spinfield_t_{0:011.6f}.png"
-    # output.save_image(spinsss[:, :, 2], pic_dir)
 
     # show the initial topological charge without a skyrmion
     logging.info(f"Q_init (no skyr): {q_init}")
@@ -2298,7 +2295,7 @@ def simulate(sim_no, angle, v_s_fac):
     if sim.model_type == "atomistic":
         postfix_dict["sub_no"] = np.float32(0)
 
-    if sim.sim_type == "wall_ret_test_new":
+    if sim.sim_type == "wall_ret_test_close" or sim.sim_type == "wall_ret_test_far":
         postfix_dict["error"] = np.empty(2, dtype=np.float32)
         start_v_s_x_y_deletion_index = 0
         error_streak_counter = 0
@@ -2360,14 +2357,10 @@ def simulate(sim_no, angle, v_s_fac):
                     spin.skyr[:, :, 2] *= -1
 
                 # kalkuliere das neue Spinfield
-                GPU.spins_evolved = spin.set_skyr(GPU.spins_evolved, spin.skyr, spin.skyr_set_x, spin.skyr_set_y)
+                GPU.spins_evolved = spin.set_skyr(GPU.spins_evolved, spin.skyr, sim.skyr_set_x, sim.skyr_set_y)
 
                 temp_last_skyr_spinfield = GPU.spins_evolved.copy()
                 last_skyr_spinfield = GPU.spins_evolved.copy()
-
-                # # save the relaxed spinfield with the new skyrmion
-                # pic_dir = f"{output.dest}/sample_{sim_no+1}_{angle}_deg_{v_s_fac}_v_s_fac/spinfield_t_{t - sim.t_pics[0] + sim.dt:011.6f}.png"
-                # output.save_image(GPU.spins_evolved[:, :, 2], pic_dir)
 
                 # kopiere das neue Spinfield auf die GPU
                 cuda.memcpy_htod(GPU.spins_id, GPU.spins_evolved)
@@ -2376,7 +2369,7 @@ def simulate(sim_no, angle, v_s_fac):
                 skyr_counter += 1
 
                 # halte das Skyrmion fest und lasse das System relaxen
-                relaxed_spins = spin.relax_but_hold_skyr(GPU.spins_evolved, numerical_steps, sim_no, angle, v_s_fac, skyr_counter)
+                relaxed_spins = spin.relax_but_hold_skyr(GPU.spins_evolved, numerical_steps, skyr_counter)
 
                 # make border black
                 custom_relaxed_spins_z = relaxed_spins[:, :, 2].copy()
@@ -2399,8 +2392,6 @@ def simulate(sim_no, angle, v_s_fac):
 
             # iterate one timestep of numeric calculations
             for _ in range(int(sim.steps_per_pic / sim.steps_per_avg)):
-
-                # logging.info(f"int(sim.avg_sim_steps / sim.save_avg): {int(sim.steps_per_pic / sim.steps_per_avg)}")
 
                 # add z component to average calculator
                 avgStep(GPU.spins_id, GPU.avgTex_id, block=(GPU.block_dim_x, GPU.block_dim_y, 1), grid=(GPU.grid_dim_x, GPU.grid_dim_y, 1))
@@ -2495,26 +2486,32 @@ def simulate(sim_no, angle, v_s_fac):
                         tex.set_array(GPU.cuda_v_s)
                         logging.warning(f"Skyrmion is at the wall at {t:011.6f} ns")
 
-                if sim.v_s_centering and 0.5 < abs(q) < 1.5:
-                    x_0 = output.stat_tracker[index_t]["x0"]
-                    y_0 = output.stat_tracker[index_t]["y0"]
-                    del_x_by_v_s = np.array([x_0 - sim.x_size / 2, y_0 - sim.y_size / 2])
+                if sim.v_s_centering:
+                    if 0.5 < abs(q) < 1.5:
+                        x_0 = output.stat_tracker[index_t]["x0"]
+                        y_0 = output.stat_tracker[index_t]["y0"]
+                        del_x_by_v_s = np.array([x_0 - sim.x_size / 2, y_0 - sim.y_size / 2])
 
-                    normalizing_factor = 200
+                        normalizing_factor = 2000
 
-                    # v_s to the center
-                    v_s = (-del_x_by_v_s / np.array([sim.x_size, sim.y_size])) * normalizing_factor * sim.v_s_factor * v_s_fac * -0.05  # in m/s
+                        # v_s to the center
+                        v_s = (-del_x_by_v_s / np.array([sim.x_size, sim.y_size])) * normalizing_factor * sim.v_s_factor * v_s_fac * -0.05  # in m/s
+                        logging.info(f"v_s aktuell: {v_s}")
 
-                    # logging.info(f"distance_from_center: {distance_from_center}")
+                        # reshape to add dimensions, tile to repeat the array
+                        sim.v_s = np.tile(v_s.reshape(1, 1, 2), (sim.x_size, sim.y_size, 1)).astype(np.float32)
 
-                    # v_s = np.array([v_s[0], v_s[1]])
+                        # copy v_s array to GPU
+                        GPU.cuda_v_s = cuda.np_to_array(sim.v_s, order="C")
+                        tex.set_array(GPU.cuda_v_s)
+                    else:
+                        sim.v_s = np.zeros((sim.x_size, sim.y_size, 2)).astype(np.float32)
 
-                    # reshape to add dimensions, tile to repeat the array
-                    sim.v_s = np.tile(v_s.reshape(1, 1, 2), (sim.x_size, sim.y_size, 1))
+                        # copy v_s array to GPU
+                        GPU.cuda_v_s = cuda.np_to_array(sim.v_s, order="C")
+                        tex.set_array(GPU.cuda_v_s)
 
-                    # copy v_s array to GPU
-                    GPU.cuda_v_s = cuda.np_to_array(sim.v_s, order="C")
-                    tex.set_array(GPU.cuda_v_s)
+
 
                 if sim.v_s_positioning:
 
@@ -2538,7 +2535,7 @@ def simulate(sim_no, angle, v_s_fac):
                     prev_v_s_y = output.stat_tracker[index_t - 1]["v_s_y"]
 
                     # get the error of the skyrmion position to the set position
-                    error = np.array([x_0 - spin.skyr_set_x, y_0 - spin.skyr_set_y])
+                    error = np.array([x_0 - sim.skyr_set_x, y_0 - sim.skyr_set_y])
                     error_value = value(error)
                     output.stat_tracker[index_t]["error"] = error
 
@@ -2549,7 +2546,7 @@ def simulate(sim_no, angle, v_s_fac):
                     if index_t == 0:
 
                         # drift distance
-                        delta_r_native = np.array([x_0 - spin.skyr_set_x, y_0 - spin.skyr_set_y])
+                        delta_r_native = np.array([x_0 - sim.skyr_set_x, y_0 - sim.skyr_set_y])
                         logging.info(f"delta_r_native: {delta_r_native}")
                         output.stat_tracker[index_t]["v_s_x"] = 0
                         output.stat_tracker[index_t]["v_s_y"] = 0
@@ -2580,7 +2577,7 @@ def simulate(sim_no, angle, v_s_fac):
                     elif index_t == 1:
 
                         # movement factor
-                        del_x_by_v_s = (np.array([x_0 - spin.skyr_set_x, y_0 - spin.skyr_set_y]) - delta_r_native) / v_s_x
+                        del_x_by_v_s = (np.array([x_0 - sim.skyr_set_x, y_0 - sim.skyr_set_y]) - delta_r_native) / v_s_x
                         logging.info(f"del_x_by_v_s_10: {del_x_by_v_s}")
 
                         # set v_s to 0 for first try
@@ -2609,7 +2606,7 @@ def simulate(sim_no, angle, v_s_fac):
                         skyr_counter -= 1
 
                         # set the next position
-                        spin.skyr_set_x = sim.distances[0]
+                        sim.skyr_set_x = sim.distances[0]
 
                     # ITERATION LOOP
                     elif error_value > local_max_error:
@@ -2634,15 +2631,15 @@ def simulate(sim_no, angle, v_s_fac):
                                 next_step_size = (sim.distances[index_now] - sim.distances[index_now - 1]) / 10
 
                                 if next_step_size < 0.01:
-                                    logging.warning(f"{spin.skyr_set_x} is the furthest that the skyrmion is not stable anymore")
+                                    logging.warning(f"{sim.skyr_set_x} is the furthest that the skyrmion is not stable anymore")
                                     output.stat_tracker[start_v_s_x_y_deletion_index:]["v_s_x"] = 0
                                     output.stat_tracker[start_v_s_x_y_deletion_index:]["v_s_y"] = 0
                                     break
                                 else:
-                                    logging.warning(f"Skyrmion is destroyed at {spin.skyr_set_x}, increasing the position density")
+                                    logging.warning(f"Skyrmion is destroyed at {sim.skyr_set_x}, increasing the position density")
 
                                     # ---- get the step distance right now ----
-                                    index_now = np.where(sim.distances == spin.skyr_set_x)[0][0]
+                                    index_now = np.where(sim.distances == sim.skyr_set_x)[0][0]
 
                                     # set new_positions to be of higher density then before
                                     old_distances = sim.distances[:index_now]
@@ -2654,13 +2651,10 @@ def simulate(sim_no, angle, v_s_fac):
                                     sim.distances = np.concatenate((old_distances, new_distances))
 
                                     # set the skyr_set_x to the new position
-                                    spin.skyr_set_x = int(sim.distances[index_now])
+                                    sim.skyr_set_x = int(sim.distances[index_now])
 
-                                    logging.warning(f"skyr_set_x now: {spin.skyr_set_x}")
+                                    logging.warning(f"skyr_set_x now: {sim.skyr_set_x}")
                                     logging.warning(f"new distances: {new_distances}")
-
-                        # error away from dest_position
-                        old_error = output.stat_tracker[index_t - 1]["error"]
 
                         # error is smaller than the smallest error yet and smaller than the max error * 100
                         if error_value < smallest_error_yet:
@@ -2681,12 +2675,12 @@ def simulate(sim_no, angle, v_s_fac):
 
                         # v_s has non 0 component(s)
                         elif np.any(v_s != 0):
-                            learning_rate = spin.calculate_learning_rate(old_error, error, t_one_pos)
+                            learning_rate = spin.calculate_learning_rate(t_one_pos)
                             # learning_rate = np.array([0.8, 0.8])
 
                         # CALCULATE NEW V_S
                         v_s_x = prev_v_s_x - (error[0]) / del_x_by_v_s[0] * learning_rate[0] * lr_adjustment
-                        v_s_y = prev_v_s_y - (error[1]) / del_x_by_v_s[1] * learning_rate[1] * lr_adjustment    #! del_x_by_v_s[0] war vorher
+                        v_s_y = prev_v_s_y - (error[1]) / del_x_by_v_s[0] * learning_rate[1] * lr_adjustment    #! del_x_by_v_s[0] war vorher
 
                         logging.info(f"at t= {t:.6g} v_s_x, v_s_y, error[0], error[1], learning_rate[0]: {v_s_x, v_s_y, error[0], error[1], learning_rate[0]}")
 
@@ -2720,8 +2714,6 @@ def simulate(sim_no, angle, v_s_fac):
                                 break
 
                         # reset the spinfield and place skyrmion at location x, y
-                        # logging.warning(f"Spinfield reset at {t:011.6f} ns")
-                        # if reset:
                         cuda.memcpy_htod(GPU.spins_id, last_skyr_spinfield)
                         cuda.Context.synchronize()
 
@@ -2734,7 +2726,7 @@ def simulate(sim_no, angle, v_s_fac):
 
                         # FINAL POSITION IS NOT REACHED
                         if not error_streak_counter >= sim.cons_reach_threashold:
-                            logging.warning(f"{error_streak_counter + 1} reaches at X={spin.skyr_set_x} with (vsx, vsy): ({v_s_x}, {v_s_y})")
+                            logging.warning(f"{error_streak_counter + 1} reaches at X={sim.skyr_set_x} with (vsx, vsy): ({v_s_x}, {v_s_y})")
 
                             # error is smaller than the smallest error yet and smaller than the max error * 10
                             if error_value < smallest_error_yet and error_value < local_max_error * 10:
@@ -2760,13 +2752,10 @@ def simulate(sim_no, angle, v_s_fac):
                                 v_s = np.tile(np.array([v_s_x, v_s_y]).reshape(1, 1, 2), (sim.x_size, sim.y_size, 1)).astype(np.float32)
 
                                 # copy v_s array to GPU
-                                # logging.info(f"resetting spinfield")
                                 GPU.cuda_v_s = cuda.np_to_array(v_s, order="C")
                                 tex.set_array(GPU.cuda_v_s)
-                                # cuda.Context.synchronize()
 
                                 # reset the spinfield and place skyrmion at location x, y
-                                # logging.warning(f"Spinfield reset at {t:011.6f} ns")
                                 cuda.memcpy_htod(GPU.spins_id, last_skyr_spinfield)
                                 cuda.Context.synchronize()
                             else:
@@ -2796,7 +2785,6 @@ def simulate(sim_no, angle, v_s_fac):
                             logging.warning(f"POTENTIAL V_S REACHED")
 
                             # reset the spinfield and place skyrmion at location x, y
-                            # logging.warning(f"Spinfield reset at {t:011.6f} ns")
                             cuda.memcpy_htod(GPU.spins_id, last_skyr_spinfield)
                             cuda.Context.synchronize()
 
@@ -2810,7 +2798,7 @@ def simulate(sim_no, angle, v_s_fac):
 
                             # angle of v_s
                             theta_deg = np.degrees(np.arctan(v_s_y / v_s_x))
-                            logging.warning(f"Skyrmion stays at X={spin.skyr_set_x} with (vsx, vsy): ({v_s_x}, {v_s_y})")
+                            logging.warning(f"Skyrmion stays at X={sim.skyr_set_x} with (vsx, vsy): ({v_s_x}, {v_s_y})")
                             logging.warning(f"angle at {t:011.6f} ns: {theta_deg}")
                             logging.warning(f"error at {t:011.6f} ns: {output.stat_tracker[index_t]['error']}")
                             logging.warning(f"max_error: {local_max_error}")
@@ -2841,17 +2829,16 @@ def simulate(sim_no, angle, v_s_fac):
                             error_streak_counter = 0
                             skyr_elims = 0
                             lr_adjustment = 1
-                            resets = 0
                             t_one_pos = 0
 
                             # NEW POSITION AVAILABLE
-                            if spin.skyr_set_x < sim.distances[-1]:
+                            if sim.skyr_set_x < sim.distances[-1]:
 
                                 # get the new position
-                                index_now = np.where(sim.distances == spin.skyr_set_x)[0][0]
-                                spin.skyr_set_x = int(sim.distances[index_now + 1].item())
+                                index_now = np.where(sim.distances == sim.skyr_set_x)[0][0]
+                                sim.skyr_set_x = int(sim.distances[index_now + 1].item())
                                 logging.warning(f"position {index_now + 1} of {len(sim.distances)} reached")
-                                logging.warning(f"NEW X: {spin.skyr_set_x}")
+                                logging.warning(f"NEW X: {sim.skyr_set_x}")
 
                                 # set v_s to 0
                                 spin.update_current(v_s_sample_factor=0, bottom_angle=0)
@@ -2911,10 +2898,6 @@ def simulate(sim_no, angle, v_s_fac):
                         no_skyr_counter += 1
 
 
-            # ------------------------------------------------------------------------------------------------------------------- weg2-------------------------------------------------
-
-            # cuda.Context.synchronize()
-
     # Berechnung der topologischen ladung am Ende der Simulation
     q_topo(GPU.spins_id, GPU.mask_id, GPU.q_topo_id, block=(GPU.block_dim_x, GPU.block_dim_y, 1), grid=(GPU.grid_dim_x, GPU.grid_dim_y, 1))
 
@@ -2959,7 +2942,7 @@ def simulate(sim_no, angle, v_s_fac):
     return q_init, q_end
 
 
-def main():
+def main(sim_type="x_current"):
     """
     Main function for the skyrmion simulation.
 
@@ -2979,7 +2962,7 @@ def main():
 
     # Laden der Variablen mittels der __init__ method der Konstantenklasse und Simulationsklasse
     cst()
-    sim()
+    sim(sim_type)
     spin()
     GPU()
     output()
@@ -3157,11 +3140,11 @@ def main():
                     logging.info(f"CREATING WALL RETENTION PLOT FOR SAMPLE {sample+1}")
                     make_wall_retention_plot(fetch_dir=sample_dir, dest_dir=sample_dir, dest_file=f"plot_wall_retention_{sample + 1}.png")
 
-            if sim.sim_type == "wall_ret_test_new":
+            if sim.sim_type == "wall_ret_test_close" or sim.sim_type == "wall_ret_test_far":
                 logging.info(f"CREATING WALL current vs distance plot {sample+1}")
                 current_vs_distance_plot(fetch_dir=sample_dir, dest_dir=sample_dir, dest_file=f"current_vs_distance_{sample + 1}.png")
-        except:
-            logging.warning("one of the plots could not be created")
+        except Exception as e:
+            logging.warning(f"One of the plot creations failed: {e}")
 
         # reset the q_location_tracker
         output.reset_q_loc_track()
@@ -3172,4 +3155,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    
+    args = arg_parser()
+
+    main(sim_type=args.sim_type)

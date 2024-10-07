@@ -24,10 +24,6 @@
 # Dir of the joblog file
 #$ -o $HOME/job_logs
 
-# Determines an e-mail address to send job information to.
-# The options after -m control the cases in which to send a e-mail (b=begin, e=end, a=abort, s=suspend)
-#$ -M akettner@physnet.uni-hamburg.de -m as
-
 # Request a parallel environment (PE) with a certain number of CPU slots.
 # REMOVE THIS FOR SINGLE THREAD JOBS!
 # Available PEs are: mpi (for treads across as few nodes as possible) or smp (for threads on the same node).
@@ -44,13 +40,11 @@ echo "current directory:"
 echo $PWD
 echo "files in current directory:"
 ls
-
-# main part of the script --> executing the python scripts
-
 echo "CUDA toolkit version:"
 nvcc --version
 echo "Python version:"
 python --version
-echo -e "\033[1;32m start \033[0m"
-python skyrmion_simulation/python_scripts/skyrmion_simulation.py --sim_type "x_current"
-echo -e "\033[1;36m fertig \033[0m"
+
+# main part of the script --> executing the python scripts
+
+echo -e "\033[1;32m starting tests \033[0m"

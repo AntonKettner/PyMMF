@@ -36,6 +36,7 @@ def linear_fit(x, y):
 
 
 def create_q_r_vs_time_plot(fetch_dir, dest_dir, dest_file="q_r_vs_time.png"):
+    matplotlib.use("Agg")
     # fetch the traj_q file from the fetch folder
     filename = "traj_q.npy"
 
