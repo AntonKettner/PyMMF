@@ -138,6 +138,7 @@ class cst:
     gamma_el = 176.1
     alpha = 0.1
     beta = alpha / 2
+    betas = np.empty(0, dtype=np.float32)
     a = 0.271e-9    
     h = 0.4e-9  # atomic layer height according to literature -> s. thesis
     p = 1  # spin polarisation
@@ -379,7 +380,7 @@ class sim:
 
         if sim.sim_type == "wall_retention":
             # Output dir name
-            cls.name = "Thesis_Fig_9"
+            cls.fig = "Thesis_Fig_9"
             
             # sim_vars
             cls.tmax = 20
@@ -406,90 +407,84 @@ class sim:
             cls.v_s_to_wall = False
             cls.v_s_positioning = False
 
-        elif sim.sim_type == "wall_retention_new":
+        # elif sim.sim_type == "wall_retention_new":
 
-            # map = Mask_track_test_vert.png
-            sim.apply_bottom_angle = False
-            # sim.bottom_angles = np.array([83.5])
-            sim.bottom_angles = np.linspace(81.8, 83.6, 10, endpoint=True)
-            sim.samples = sim.bottom_angles.shape[0] * sim.v_s_factors.shape[0]
-            cls.skyr_set_x = 350
-            cls.skyr_set_y = 50
-            cls.v_s_active = True
-            cls.v_s_dynamic = False
-            cls.v_s_centering = False
-            cls.v_s_to_wall = True
-            cls.check_variance = False
-            cls.x_threashold = cls.x_size - cls.r_skyr * 1.8 / (cst.a * 1e9)
+        #     # map = Mask_track_test_vert.png
+        #     sim.apply_bottom_angle = False
+        #     # sim.bottom_angles = np.array([83.5])
+        #     sim.bottom_angles = np.linspace(81.8, 83.6, 10, endpoint=True)
+        #     sim.samples = sim.bottom_angles.shape[0] * sim.v_s_factors.shape[0]
+        #     cls.skyr_set_x = 350
+        #     cls.skyr_set_y = 50
+        #     cls.v_s_active = True
+        #     cls.v_s_dynamic = False
+        #     cls.v_s_centering = False
+        #     cls.v_s_to_wall = True
+        #     cls.check_variance = False
+        #     cls.x_threashold = cls.x_size - cls.r_skyr * 1.8 / (cst.a * 1e9)
 
-        elif sim.sim_type == "wall_retention_reverse_beta":
-            # map = Mask_track_test_vert.png
-            sim.apply_bottom_angle = False
-            # beta from half of alpha to double of alpha
-            cst.beta *= 4
-            # sim.bottom_angles = np.array([83.5])
-            sim.bottom_angles = np.linspace(0, 40, 10, endpoint=True)
-            sim.samples = sim.bottom_angles.shape[0] * sim.v_s_factors.shape[0]
-            cls.skyr_set_x = 550
-            cls.skyr_set_y = 500
-            cls.v_s_active = True
-            cls.v_s_dynamic = False
-            cls.v_s_centering = False
-            cls.v_s_to_wall = True
-            cls.x_threashold = cls.x_size - cls.r_skyr * 5.5
+        # elif sim.sim_type == "wall_retention_reverse_beta":
+        #     # map = Mask_track_test_vert.png
+        #     sim.apply_bottom_angle = False
+        #     # beta from half of alpha to double of alpha
+        #     cst.beta *= 4
+        #     # sim.bottom_angles = np.array([83.5])
+        #     sim.bottom_angles = np.linspace(0, 40, 10, endpoint=True)
+        #     sim.samples = sim.bottom_angles.shape[0] * sim.v_s_factors.shape[0]
+        #     cls.skyr_set_x = 550
+        #     cls.skyr_set_y = 500
+        #     cls.v_s_active = True
+        #     cls.v_s_dynamic = False
+        #     cls.v_s_centering = False
+        #     cls.v_s_to_wall = True
+        #     cls.x_threashold = cls.x_size - cls.r_skyr * 5.5
 
-        elif sim.sim_type == "angled_vs_comparison":
-            # map = Mask_track_test.png
-            # map = Mask_track_test_atomic_step.png
-            # t_max = 50, skyr No = 1, pics = 1000
-            sim.apply_bottom_angle = False
+        elif sim.sim_type == "angled_vs_on_edge":
+            cls.fig = "Figure_12"
+            # sim_vars
+            cls.t_max = 2
             cst.beta = cst.alpha
-            # sim.bottom_angles = np.linspace(2.91, 3.49, 30, endpoint=True)
-            # sim.bottom_angles = np.linspace(7, 8, 30, endpoint=True)
-            # sim.bottom_angles = np.linspace(7, 9, 17, endpoint=True) * -1
-            # sim.bottom_angles = np.linspace(6, 7, 8, endpoint=False) * -1
-            # sim.bottom_angles = np.linspace(6, 9, 25, endpoint=True) * -1
-            # sim.bottom_angles = np.linspace(7.2, 7.8, 7, endpoint=True) * -1
-            # sim.bottom_angles = np.linspace(4.8, 5.4, 7, endpoint=True) * -1
-            # sim.bottom_angles = np.linspace(3, 6, 24, endpoint=False) * -1
-            # sim.bottom_angles = np.linspace(3, 9, 49, endpoint=True) * -1
-            # sim.bottom_angles = np.array([5.875,9]) * -1
-            sim.bottom_angles = np.array([7.25, 5.5]) * -1
-            # sim.bottom_angles = np.array([5.5, 5.125]) * -1
-            # sim.v_s_factors = np.linspace(0.5, 20, 20, endpoint=True) * -1
-            # sim.v_s_factors = np.linspace(0.5, 20.5, 21, endpoint=True) * -1
-            # sim.v_s_factors = np.linspace(0.3, 2.7, 13, endpoint=True) * -1
-            # sim.v_s_factors = np.linspace(15, 17.5, 26, endpoint=True) * -1
-            # sim.v_s_factors = np.linspace(21.5, 30.5, 10, endpoint=True) * -1
-            # sim.v_s_factors = np.array([19.5]) * -1
-            sim.v_s_factors = np.array([16.5]) * -1
-            # sim.v_s_factors = np.array([18.5]) * -1
+            cls.No_sim_img = 20
 
-            # reverse the order of the v_s factors
-            # sim.v_s_factors = sim.v_s_factors[::-1]
-            # sim.bottom_angles = sim.bottom_angles[::-1]
-            sim.samples = sim.bottom_angles.shape[0] * sim.v_s_factors.shape[0]
+            # set the map
+            cls.mask_dir = "needed_files/Mask_track_test.png"
+            # cls.mask_dir = "needed_files/Mask_track_test_atomic_step.png"
+
+            # load the mask and get the size of the mask
+            cls.x_size, cls.y_size = cls.load_mask(cls.mask_dir)
+
+            # set skyrmion vars
+            cls.final_skyr_No = 1
             cls.skyr_set_x = 450
             cls.skyr_set_y = 160
-            cls.v_s_active = True  # Warum False?
-            cls.v_s_dynamic = False
-            cls.v_s_centering = False
 
-        elif sim.sim_type == "angled_wall_comparison":
-            # map = Mask_track_test.png
-            # skyr_no = 1
-            sim.apply_bottom_angle = True
-            sim.bottom_angles = np.linspace(2.91, 3.49, 30, endpoint=True)
-            sim.v_s_factors = np.linspace(5, 34, 30, endpoint=True)
-            sim.samples = sim.bottom_angles.shape[0] * sim.v_s_factors.shape[0]
-            cls.skyr_set_x = 30
-            cls.skyr_set_y = 120
+            # v_s properties
+            cls.bottom_angles = np.linspace(3, 9, 49, endpoint=True) * -1
+            cls.v_s_factors = np.linspace(0.5, 30.5, 31, endpoint=True) * -1
+            cls.samples = sim.bottom_angles.shape[0] * sim.v_s_factors.shape[0]
+            cst.betas = np.ones((cls.samples)) * cst.alpha
+            cst.B_fields = np.ones((cls.samples)) * cst.B_ext
+            cls.v_s_to_wall = False
             cls.v_s_active = True
             cls.v_s_dynamic = False
             cls.v_s_centering = False
+            cls.apply_bottom_angle = False
+
+        # elif sim.sim_type == "angled_wall_comparison":
+        #     # map = Mask_track_test.png
+        #     # skyr_no = 1
+        #     sim.apply_bottom_angle = True
+        #     sim.bottom_angles = np.linspace(2.91, 3.49, 30, endpoint=True)
+        #     sim.v_s_factors = np.linspace(5, 34, 30, endpoint=True)
+        #     sim.samples = sim.bottom_angles.shape[0] * sim.v_s_factors.shape[0]
+        #     cls.skyr_set_x = 30
+        #     cls.skyr_set_y = 120
+        #     cls.v_s_active = True
+        #     cls.v_s_dynamic = False
+        #     cls.v_s_centering = False
 
         elif sim.sim_type == "skyrmion_creation":
-            cls.name = "Thesis_Fig_8"
+            cls.fig = "Thesis_Fig_8"
 
             # set the map
             cls.mask_dir = "needed_files/Mask_track_free.png"
@@ -517,6 +512,7 @@ class sim:
             cls.apply_bottom_angle = False
 
         elif sim.sim_type == "x_current":
+            cls.fig = sim.sim_type
             # sim_vars
             cls.t_max = 5
             cst.beta = cst.alpha
@@ -541,24 +537,56 @@ class sim:
             cls.v_s_centering = False
             cls.apply_bottom_angle = False
 
-        elif sim.sim_type == "wall_ret_test":
-            # tmax = 5, skyr No = 1, map = Mask_track_free.png
-            # cls.skyr_set_x = 100
-            # cls.skyr_set_y = 330
-            cls.skyr_set_x = cls.x_size / 2
+        elif sim.sim_type == "x_current_SkH_test":
+
+            cls.fig = "Thesis_Fig_11"
+            # sim_vars
+            cls.t_max = 40
+            cst.betas = np.array([0.5, 1, 2]) * cst.alpha
+            # cst.beta = cst.alpha
+            cls.No_sim_img = 200
+
+            # set the map
+            cls.mask_dir = "needed_files/Mask_track_beta_vs_alpha.png"
+
+            # load the mask and get the size of the mask
+            cls.x_size, cls.y_size = cls.load_mask(cls.mask_dir)
+
+            # set skyrmion vars
+            cls.final_skyr_No = 1
+            # cls.skyr_set_x = cls.x_size / 2
+            cls.skyr_set_x = 50
             cls.skyr_set_y = cls.y_size / 2
-            cst.beta = cst.alpha
-            # sim.v_s_factors = np.array([0])
-            sim.v_s_factors = np.array([1, 2, 3, 4, 5, 6, 7])
-            sim.apply_bottom_angle = False
+
+            
+            cls.v_s_factors = np.ones((3)) / cst.a / 1e9 # -> should be 10 v_s
+            cls.samples = cls.v_s_factors.shape[0]
+            cls.v_s_to_wall = False
             cls.v_s_active = True
             cls.v_s_dynamic = False
             cls.v_s_centering = False
-            cls.check_variance = True
+            cls.apply_bottom_angle = False
+
+            cst.B_fields = np.ones((cls.samples)) * cst.B_ext
+
+        # elif sim.sim_type == "wall_ret_test":
+        #     # tmax = 5, skyr No = 1, map = Mask_track_free.png
+        #     # cls.skyr_set_x = 100
+        #     # cls.skyr_set_y = 330
+        #     cls.skyr_set_x = cls.x_size / 2
+        #     cls.skyr_set_y = cls.y_size / 2
+        #     cst.beta = cst.alpha
+        #     # sim.v_s_factors = np.array([0])
+        #     sim.v_s_factors = np.array([1, 2, 3, 4, 5, 6, 7])
+        #     sim.apply_bottom_angle = False
+        #     cls.v_s_active = True
+        #     cls.v_s_dynamic = False
+        #     cls.v_s_centering = False
+        #     cls.check_variance = True
 
         elif sim.sim_type == "wall_ret_test_close":
             # Output dir name
-            cls.name = "Thesis_Fig_10_close"
+            cls.fig = "Thesis_Fig_10_close"
 
             # sim_vars
             # 200 für Deltax klein (4-1.5 r_skyr ca.) vs. 800 für Deltax groß (7 - 4 r_skyr ca.)
@@ -597,7 +625,7 @@ class sim:
 
         elif sim.sim_type == "wall_ret_test_far":
             # Output dir name
-            cls.name = "Thesis_Fig_10_far"
+            cls.fig = "Thesis_Fig_10_far"
 
             # sim_vars
             # 200 für Deltax klein (4-1.5 r_skyr ca.) vs. 800 für Deltax groß (7 - 4 r_skyr ca.)
@@ -634,20 +662,20 @@ class sim:
             sim.cons_reach_threashold = 10
             sim.samples = sim.bottom_angles.shape[0] * sim.v_s_factors.shape[0]
 
-        elif sim.sim_type == "creation_gate":
-            # needs Mask_track_multiply.png as a mask
-            # cst.a_2d_field = cst.A_Field
-            # cst.d_2d_field = cst.DM_Field
-            # cst.k_2d_field = cst.K_Field
-            cls.skyr_set_x = 60
-            cls.skyr_set_y = 106
-            sim.bottom_angles = np.array([0])
-            sim.v_s_factors = np.array([20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50])
-            sim.samples = sim.bottom_angles.shape[0] * sim.v_s_factors.shape[0]
-            sim.apply_bottom_angle = False
-            cls.v_s_active = True
-            cls.v_s_dynamic = True
-            cls.v_s_centering = False
+        # elif sim.sim_type == "creation_gate":
+        #     # needs Mask_track_multiply.png as a mask
+        #     # cst.a_2d_field = cst.A_Field
+        #     # cst.d_2d_field = cst.DM_Field
+        #     # cst.k_2d_field = cst.K_Field
+        #     cls.skyr_set_x = 60
+        #     cls.skyr_set_y = 106
+        #     sim.bottom_angles = np.array([0])
+        #     sim.v_s_factors = np.array([20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50])
+        #     sim.samples = sim.bottom_angles.shape[0] * sim.v_s_factors.shape[0]
+        #     sim.apply_bottom_angle = False
+        #     cls.v_s_active = True
+        #     cls.v_s_dynamic = True
+        #     cls.v_s_centering = False
         
         elif sim.sim_type == "pinning_tests":
             # cls.mask_dir = "needed_files/Mask_track_corner_through.png"
@@ -667,34 +695,34 @@ class sim:
             cls.v_s_dynamic = True
             cls.v_s_centering = False
 
-        elif sim.sim_type == "antiferromagnet_simulation":
-            cls.mask_dir = "needed_files/Mask_track_free.png"
-            # -> s. alternative exchange interactions
-            # Konstanten Wang 2018 Pt/Co/MgO --> already inverted exchange interaction
-            cst.a = 0.4e-9
-            cst.__init__()
-            cls.track_radius = False
-            cls.antiferromagnet = True
-            cls.r_skyr = (cls.x_size + cls.y_size) / 2 / 10 / 2
-            cls.skyr_set_x = math.floor((cls.x_size + 1) / 2)
-            cls.skyr_set_y = math.floor((cls.y_size + 1) / 2)
-            sim.final_skyr_No = 1
-            sim.apply_bottom_angle = False
-            cls.v_s_dynamic = False
-            cls.v_s_centering = False
+        # elif sim.sim_type == "antiferromagnet_simulation":
+        #     cls.mask_dir = "needed_files/Mask_track_free.png"
+        #     # -> s. alternative exchange interactions
+        #     # Konstanten Wang 2018 Pt/Co/MgO --> already inverted exchange interaction
+        #     cst.a = 0.4e-9
+        #     cst.__init__()
+        #     cls.track_radius = False
+        #     cls.antiferromagnet = True
+        #     cls.r_skyr = (cls.x_size + cls.y_size) / 2 / 10 / 2
+        #     cls.skyr_set_x = math.floor((cls.x_size + 1) / 2)
+        #     cls.skyr_set_y = math.floor((cls.y_size + 1) / 2)
+        #     sim.final_skyr_No = 1
+        #     sim.apply_bottom_angle = False
+        #     cls.v_s_dynamic = False
+        #     cls.v_s_centering = False
 
-        elif sim.sim_type == "first_results_replica":
-            # First results with replica
-            cls.mask_dir = "needed_files/Mask_track_new_3.png"
-            cls.skyr_set_x = 15
-            cls.skyr_set_y = math.floor((cls.y_size + 1) / 2 - 10)
-            sim.v_s_factors = np.array([6])
-            sim.samples = sim.v_s_factors.shape[0]
-            sim.apply_bottom_angle = False
-            cls.v_s_active = True
-            cls.v_s_dynamic = True
-            cls.v_s_centering = False
-            cls.v_s_to_wall = False
+        # elif sim.sim_type == "first_results_replica":
+        #     # First results with replica
+        #     cls.mask_dir = "needed_files/Mask_track_new_3.png"
+        #     cls.skyr_set_x = 15
+        #     cls.skyr_set_y = math.floor((cls.y_size + 1) / 2 - 10)
+        #     sim.v_s_factors = np.array([6])
+        #     sim.samples = sim.v_s_factors.shape[0]
+        #     sim.apply_bottom_angle = False
+        #     cls.v_s_active = True
+        #     cls.v_s_dynamic = True
+        #     cls.v_s_centering = False
+        #     cls.v_s_to_wall = False
 
         elif sim.sim_type == "ReLU":
             # FINAL RESULTS:
@@ -807,6 +835,10 @@ class sim:
         
         # create an empty array for the current
         cls.v_s = np.empty((cls.x_size, cls.y_size, 2), dtype=np.float32)
+
+        # set the external fields
+        B_fields = np.ones((cls.samples)) * cst.B_ext
+
     
     @classmethod
     def load_mask(cls, dir):
@@ -852,7 +884,7 @@ class sim:
         return max(1, int(value))
 
     @staticmethod
-    def compile_kernel(current_ext_field):
+    def compile_kernel():
         """
         Compiles a CUDA kernel for skyrmion simulation with the given external field.
         Args:
@@ -881,7 +913,7 @@ class sim:
             f"__constant__ float A        = {cst.A_Field};\n"
             f"__constant__ float DM       = {cst.DM_Field};\n"
             f"__constant__ float K        = {cst.K_Field};\n"
-            f"__constant__ float B_ext    = {current_ext_field};\n"
+            f"__constant__ float B_ext    = {cst.B_ext};\n"
             f"__constant__ float Temp     = {cst.Temp};\n"
             f"__constant__ float alpha    = {cst.alpha};\n"
             f"__constant__ float beta     = {cst.beta};\n"
@@ -1701,7 +1733,7 @@ class output:
         # setting the destination for the output
         # get the last part of the mask_dir
         spinfield_name = os.path.splitext(os.path.basename(sim.mask_dir))[0]
-        cls.dest = f"OUTPUT/{sim.name}_{sim.sim_type}"
+        cls.dest = f"OUTPUT/{sim.fig}_{sim.sim_type}"
 
         # Erstellen der Ordnerstruktur und loeschen der alten Ordner falls vorhanden
         if os.path.exists(f"{cls.dest}"):
@@ -2204,8 +2236,8 @@ def arg_parser():
     # Define a list of acceptable simulation types
     acceptable_sim_types = [
         "skyrmion_creation", "wall_retention", "wall_retention_new", "wall_ret_test",
-        "wall_ret_test_close", "wall_ret_test_far", "angled_vs_comparison", "angled_wall_comparison",
-        "x_current", "creation_gate", "antiferromagnet_simulation", "pinning_tests", "first_results_replica",
+        "wall_ret_test_close", "wall_ret_test_far", "angled_vs_on_edge", "angled_wall_comparison",
+        "x_current", "x_current_SkH_test", "creation_gate", "antiferromagnet_simulation", "pinning_tests", "first_results_replica",
         "wall_retention_reverse_beta", "ReLU", "ReLU_larger_beta", "ReLU_changed_capacity"
     ]
 
@@ -2240,11 +2272,16 @@ def simulate(sim_no, angle, v_s_fac):
     # initialize the spinfield
     spins = spin.initialize_spinfield()
 
-    current_B_field = cst.B_fields[sim_no]
-    logging.warning(f"current B field: {current_B_field}")
+    # if var B_field exists:
+    cst.B_ext = float(cst.B_fields[sim_no])
+    logging.warning(f"current B field: {cst.B_ext}") if sim.sim_type == "ReLU_changed_capacity" else None
+
+    # activate the beta that is currently in use
+    cst.beta = float(cst.betas[sim_no])
+    logging.warning(f"CURRENT BETA: {cst.beta}") if sim.sim_type == "x_current_SkH_test" else None
 
     # compile the kernel
-    mod, tex = sim.compile_kernel(current_B_field)
+    mod, tex = sim.compile_kernel()
 
     # get the fitting name(s) of the kernel function(s)
     numerical_steps, avgStep, q_topo = sim.get_kernel_functions(mod)

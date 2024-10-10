@@ -48,6 +48,8 @@ class TestSkyrmionSimulations(ut.TestCase):
             "wall_ret_test_close",
             "wall_ret_test_far",
             "skyr_creation",    # q_r_vs_time plot wrong
+            "x_current_SkH_test",
+            "angled_vs_on_edge",   # depending on mask_dir either with or without atomic step
         ]
 
     def test_simulation(self):
