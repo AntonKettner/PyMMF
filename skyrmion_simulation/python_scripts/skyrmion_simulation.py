@@ -352,7 +352,7 @@ class sim:
         - "heun" : Can be used with a max time step of 0.000018.
         """
         # SIMULATION TYPES: "skyrmion_creation" or "wall_retention" or "wall_ret_test_close" or "wall_ret_test_far" or
-        # SIMULATION TYPES: "angled_vs_on_edge" or "x_current" or "pinning_tests" or "ReLU" or "ReLU_larger_beta"
+        # SIMULATION TYPES: "angled_vs_on_edge" or "x_current" or "x_current_SkH_test" or "pinning_tests" or "ReLU" or "ReLU_larger_beta"
         cls.sim_type = sim_type
 
         if cls.calculation_method == "euler":
@@ -695,7 +695,7 @@ class sim:
         cls.v_s = np.empty((cls.x_size, cls.y_size, 2), dtype=np.float32)
 
         # set the external fields
-        B_fields = np.ones((cls.samples)) * cst.B_ext
+        cst.B_fields = np.ones((cls.samples)) * cst.B_ext
 
     @classmethod
     def load_mask(cls, dir):
@@ -2083,25 +2083,21 @@ class output:
 
 def arg_parser():
     # Define a list of acceptable simulation types
+
+    # SIMULATION TYPES: "skyrmion_creation" or "wall_retention" or "wall_ret_test_close" or "wall_ret_test_far" or
+    # SIMULATION TYPES: "angled_vs_on_edge" or "x_current" or "x_current_SkH_test" or "pinning_tests" or "ReLU" or "ReLU_larger_beta"
     acceptable_sim_types = [
         "skyrmion_creation",
         "wall_retention",
-        "wall_retention_new",
         "wall_ret_test",
         "wall_ret_test_close",
         "wall_ret_test_far",
         "angled_vs_on_edge",
-        "angled_wall_comparison",
         "x_current",
         "x_current_SkH_test",
-        "creation_gate",
-        "antiferromagnet_simulation",
         "pinning_tests",
-        "first_results_replica",
-        "wall_retention_reverse_beta",
         "ReLU",
         "ReLU_larger_beta",
-        "ReLU_changed_capacity",
     ]
 
     parser = ap.ArgumentParser(description=f"run one of the following simulation types: {acceptable_sim_types}")
