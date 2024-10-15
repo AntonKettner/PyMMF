@@ -32,6 +32,7 @@ calculation_steps = 6000000
 global sim_model_for_main
 sim_model_for_main = "atomistic"  # "atomistic" or "continuum"
 
+
 def is_temp(path):
     return "temp" in os.path.basename(path).lower()
 
@@ -56,10 +57,14 @@ def draw_hex_with_plt(locations, potential, current, hex_array_upscaled, dest_fi
 
     # Define the extent of the imshow plot to match the range of your locations
     extent = np.array(
-        [all_locations_x.min() - pic_offset, all_locations_x.max() + 0.5 - pic_offset, all_locations_y.min() - pic_offset, all_locations_y.max() + 1 - pic_offset]
+        [
+            all_locations_x.min() - pic_offset,
+            all_locations_x.max() + 0.5 - pic_offset,
+            all_locations_y.min() - pic_offset,
+            all_locations_y.max() + 1 - pic_offset,
+        ]
     )
 
-    
     seismic = matplotlib.colormaps["seismic"]
 
     custom_seismic = colors.ListedColormap(seismic(np.linspace(0, 1, 256)))
@@ -161,8 +166,8 @@ def draw_hex_with_plt(locations, potential, current, hex_array_upscaled, dest_fi
         headlength=5,
         scale=Q.scale * 0.8,  # the bigger the shorter the arrows
         scale_units="xy",
-        width=Q.width * 0.4,    # the bigger the thicker the arrows
-        color = "yellow"
+        width=Q.width * 0.4,  # the bigger the thicker the arrows
+        color="yellow",
     )
 
     # for narrowings
@@ -320,7 +325,7 @@ def current_and_potential_plot(current, potential, dest_dir, model, dest_file_na
             hex_array, locations = make_hexagonal_spinfield(potential)
         else:
             # load the image as the potential:
-            image = np.load(image_dir)[:,:,2] #--> only z value necessary
+            image = np.load(image_dir)[:, :, 2]  # --> only z value necessary
             logging.warning(f"image[10,10]: {image[10,10]}\n")
             logging.warning(f"image[100,100]: {image[100,100]}\n")
             hex_array, locations = make_hexagonal_spinfield(image)
@@ -356,68 +361,65 @@ class dirs:
     image_npy_dirs.append(None)
     dest_file_names.append("current_test.png")
 
-
-    # 
+    #
     # =========================================simple small beta for ReLU function =========================================
     # for i in range(8):
-        # if i == 0:
-        #     mask_file_dir = "OUTPUT/ROMMING_SIMPLE_ReLU_for_THESIS_one_skyr_atomistic_ReLU_open_heun_1.5_1_0/sample_1_0_deg_1_v_s_fac/racetrack.png"
-        #     dest_file_name = "temp_simple_ReLU_small_beta_0.png"
-        #     image_npy_dir = "OUTPUT/ROMMING_SIMPLE_ReLU_for_THESIS_one_skyr_atomistic_ReLU_open_heun_1.5_1_0/sample_1_0_deg_1_v_s_fac/data/Spins_at_t_0000.000018.npy"
-        #     image_npy_dirs.append(image_npy_dir)
-        #     mask_file_dirs.append(mask_file_dir)
-        #     dest_file_names.append(dest_file_name)
-        # if i == 1:
-        #     mask_file_dir = "OUTPUT/ROMMING_SIMPLE_ReLU_for_THESIS_one_skyr_atomistic_ReLU_open_heun_1.5_1_0/sample_1_0_deg_1_v_s_fac/racetrack.png"
-        #     dest_file_name = "temp_simple_ReLU_small_beta_2.png"
-        #     image_npy_dir = "OUTPUT/ROMMING_SIMPLE_ReLU_for_THESIS_one_skyr_atomistic_ReLU_open_heun_1.5_1_0/sample_1_0_deg_1_v_s_fac/data/Spins_at_t_0002.000000.npy"
-        #     image_npy_dirs.append(image_npy_dir)
-        #     mask_file_dirs.append(mask_file_dir)
-        #     dest_file_names.append(dest_file_name)
-        # if i == 2:
-        #     mask_file_dir = "OUTPUT/ROMMING_SIMPLE_ReLU_for_THESIS_one_skyr_atomistic_ReLU_open_heun_1.5_1_0/sample_1_0_deg_1_v_s_fac/racetrack.png"
-        #     dest_file_name = "temp_simple_ReLU_small_beta_4.png"
-        #     image_npy_dir = "OUTPUT/ROMMING_SIMPLE_ReLU_for_THESIS_one_skyr_atomistic_ReLU_open_heun_1.5_1_0/sample_1_0_deg_1_v_s_fac/data/Spins_at_t_0004.000000.npy"
-        #     image_npy_dirs.append(image_npy_dir)
-        #     mask_file_dirs.append(mask_file_dir)
-        #     dest_file_names.append(dest_file_name)
-        # if i == 3:
-        #     mask_file_dir = "OUTPUT/ROMMING_SIMPLE_ReLU_for_THESIS_one_skyr_atomistic_ReLU_open_heun_1.5_1_0/sample_1_0_deg_1_v_s_fac/racetrack.png"
-        #     dest_file_name = "temp_simple_ReLU_small_beta_6.png"
-        #     image_npy_dir = "OUTPUT/ROMMING_SIMPLE_ReLU_for_THESIS_one_skyr_atomistic_ReLU_open_heun_1.5_1_0/sample_1_0_deg_1_v_s_fac/data/Spins_at_t_0006.000000.npy"
-        #     image_npy_dirs.append(image_npy_dir)
-        #     mask_file_dirs.append(mask_file_dir)
-        #     dest_file_names.append(dest_file_name)
-        # if i == 4:
-        #     mask_file_dir = "OUTPUT/ROMMING_SIMPLE_ReLU_for_THESIS_one_skyr_atomistic_ReLU_open_heun_1.5_1_0/sample_1_0_deg_1_v_s_fac/racetrack.png"
-        #     dest_file_name = "temp_simple_ReLU_small_beta_8.png"
-        #     image_npy_dir = "OUTPUT/ROMMING_SIMPLE_ReLU_for_THESIS_one_skyr_atomistic_ReLU_open_heun_1.5_1_0/sample_1_0_deg_1_v_s_fac/data/Spins_at_t_0008.000000.npy"
-        #     image_npy_dirs.append(image_npy_dir)
-        #     mask_file_dirs.append(mask_file_dir)
-        #     dest_file_names.append(dest_file_name)
-        # if i == 5:
-        #     mask_file_dir = "OUTPUT/ROMMING_SIMPLE_ReLU_for_THESIS_one_skyr_atomistic_ReLU_open_heun_1.5_1_0/sample_1_0_deg_1_v_s_fac/racetrack.png"
-        #     dest_file_name = "temp_simple_ReLU_small_beta_10.png"
-        #     image_npy_dir = "OUTPUT/ROMMING_SIMPLE_ReLU_for_THESIS_one_skyr_atomistic_ReLU_open_heun_1.5_1_0/sample_1_0_deg_1_v_s_fac/data/Spins_at_t_0010.000000.npy"
-        #     image_npy_dirs.append(image_npy_dir)
-        #     mask_file_dirs.append(mask_file_dir)
-        #     dest_file_names.append(dest_file_name)
-        # if i == 6:
-        #     mask_file_dir = "OUTPUT/ROMMING_SIMPLE_ReLU_for_THESIS_one_skyr_atomistic_ReLU_open_heun_1.5_1_0/sample_1_0_deg_1_v_s_fac/racetrack.png"
-        #     dest_file_name = "temp_simple_ReLU_small_beta_12.png"
-        #     image_npy_dir = "OUTPUT/ROMMING_SIMPLE_ReLU_for_THESIS_one_skyr_atomistic_ReLU_open_heun_1.5_1_0/sample_1_0_deg_1_v_s_fac/data/Spins_at_t_0012.000000.npy"
-        #     image_npy_dirs.append(image_npy_dir)
-        #     mask_file_dirs.append(mask_file_dir)
-        #     dest_file_names.append(dest_file_name)
-        # if i == 7:
-        #     mask_file_dir = "OUTPUT/ROMMING_SIMPLE_ReLU_for_THESIS_one_skyr_atomistic_ReLU_open_heun_1.5_1_0/sample_1_0_deg_1_v_s_fac/racetrack.png"
-        #     dest_file_name = "temp_simple_ReLU_small_beta_end.png"
-        #     image_npy_dir = "OUTPUT/ROMMING_SIMPLE_ReLU_for_THESIS_one_skyr_atomistic_ReLU_open_heun_1.5_1_0/sample_1_0_deg_1_v_s_fac/data/Spins_at_t_0056.800000.npy"
-        #     image_npy_dirs.append(image_npy_dir)
-        #     mask_file_dirs.append(mask_file_dir)
-        #     dest_file_names.append(dest_file_name)
-
-
+    # if i == 0:
+    #     mask_file_dir = "OUTPUT/ROMMING_SIMPLE_ReLU_for_THESIS_one_skyr_atomistic_ReLU_open_heun_1.5_1_0/sample_1_0_deg_1_v_s_fac/racetrack.png"
+    #     dest_file_name = "temp_simple_ReLU_small_beta_0.png"
+    #     image_npy_dir = "OUTPUT/ROMMING_SIMPLE_ReLU_for_THESIS_one_skyr_atomistic_ReLU_open_heun_1.5_1_0/sample_1_0_deg_1_v_s_fac/data/Spins_at_t_0000.000018.npy"
+    #     image_npy_dirs.append(image_npy_dir)
+    #     mask_file_dirs.append(mask_file_dir)
+    #     dest_file_names.append(dest_file_name)
+    # if i == 1:
+    #     mask_file_dir = "OUTPUT/ROMMING_SIMPLE_ReLU_for_THESIS_one_skyr_atomistic_ReLU_open_heun_1.5_1_0/sample_1_0_deg_1_v_s_fac/racetrack.png"
+    #     dest_file_name = "temp_simple_ReLU_small_beta_2.png"
+    #     image_npy_dir = "OUTPUT/ROMMING_SIMPLE_ReLU_for_THESIS_one_skyr_atomistic_ReLU_open_heun_1.5_1_0/sample_1_0_deg_1_v_s_fac/data/Spins_at_t_0002.000000.npy"
+    #     image_npy_dirs.append(image_npy_dir)
+    #     mask_file_dirs.append(mask_file_dir)
+    #     dest_file_names.append(dest_file_name)
+    # if i == 2:
+    #     mask_file_dir = "OUTPUT/ROMMING_SIMPLE_ReLU_for_THESIS_one_skyr_atomistic_ReLU_open_heun_1.5_1_0/sample_1_0_deg_1_v_s_fac/racetrack.png"
+    #     dest_file_name = "temp_simple_ReLU_small_beta_4.png"
+    #     image_npy_dir = "OUTPUT/ROMMING_SIMPLE_ReLU_for_THESIS_one_skyr_atomistic_ReLU_open_heun_1.5_1_0/sample_1_0_deg_1_v_s_fac/data/Spins_at_t_0004.000000.npy"
+    #     image_npy_dirs.append(image_npy_dir)
+    #     mask_file_dirs.append(mask_file_dir)
+    #     dest_file_names.append(dest_file_name)
+    # if i == 3:
+    #     mask_file_dir = "OUTPUT/ROMMING_SIMPLE_ReLU_for_THESIS_one_skyr_atomistic_ReLU_open_heun_1.5_1_0/sample_1_0_deg_1_v_s_fac/racetrack.png"
+    #     dest_file_name = "temp_simple_ReLU_small_beta_6.png"
+    #     image_npy_dir = "OUTPUT/ROMMING_SIMPLE_ReLU_for_THESIS_one_skyr_atomistic_ReLU_open_heun_1.5_1_0/sample_1_0_deg_1_v_s_fac/data/Spins_at_t_0006.000000.npy"
+    #     image_npy_dirs.append(image_npy_dir)
+    #     mask_file_dirs.append(mask_file_dir)
+    #     dest_file_names.append(dest_file_name)
+    # if i == 4:
+    #     mask_file_dir = "OUTPUT/ROMMING_SIMPLE_ReLU_for_THESIS_one_skyr_atomistic_ReLU_open_heun_1.5_1_0/sample_1_0_deg_1_v_s_fac/racetrack.png"
+    #     dest_file_name = "temp_simple_ReLU_small_beta_8.png"
+    #     image_npy_dir = "OUTPUT/ROMMING_SIMPLE_ReLU_for_THESIS_one_skyr_atomistic_ReLU_open_heun_1.5_1_0/sample_1_0_deg_1_v_s_fac/data/Spins_at_t_0008.000000.npy"
+    #     image_npy_dirs.append(image_npy_dir)
+    #     mask_file_dirs.append(mask_file_dir)
+    #     dest_file_names.append(dest_file_name)
+    # if i == 5:
+    #     mask_file_dir = "OUTPUT/ROMMING_SIMPLE_ReLU_for_THESIS_one_skyr_atomistic_ReLU_open_heun_1.5_1_0/sample_1_0_deg_1_v_s_fac/racetrack.png"
+    #     dest_file_name = "temp_simple_ReLU_small_beta_10.png"
+    #     image_npy_dir = "OUTPUT/ROMMING_SIMPLE_ReLU_for_THESIS_one_skyr_atomistic_ReLU_open_heun_1.5_1_0/sample_1_0_deg_1_v_s_fac/data/Spins_at_t_0010.000000.npy"
+    #     image_npy_dirs.append(image_npy_dir)
+    #     mask_file_dirs.append(mask_file_dir)
+    #     dest_file_names.append(dest_file_name)
+    # if i == 6:
+    #     mask_file_dir = "OUTPUT/ROMMING_SIMPLE_ReLU_for_THESIS_one_skyr_atomistic_ReLU_open_heun_1.5_1_0/sample_1_0_deg_1_v_s_fac/racetrack.png"
+    #     dest_file_name = "temp_simple_ReLU_small_beta_12.png"
+    #     image_npy_dir = "OUTPUT/ROMMING_SIMPLE_ReLU_for_THESIS_one_skyr_atomistic_ReLU_open_heun_1.5_1_0/sample_1_0_deg_1_v_s_fac/data/Spins_at_t_0012.000000.npy"
+    #     image_npy_dirs.append(image_npy_dir)
+    #     mask_file_dirs.append(mask_file_dir)
+    #     dest_file_names.append(dest_file_name)
+    # if i == 7:
+    #     mask_file_dir = "OUTPUT/ROMMING_SIMPLE_ReLU_for_THESIS_one_skyr_atomistic_ReLU_open_heun_1.5_1_0/sample_1_0_deg_1_v_s_fac/racetrack.png"
+    #     dest_file_name = "temp_simple_ReLU_small_beta_end.png"
+    #     image_npy_dir = "OUTPUT/ROMMING_SIMPLE_ReLU_for_THESIS_one_skyr_atomistic_ReLU_open_heun_1.5_1_0/sample_1_0_deg_1_v_s_fac/data/Spins_at_t_0056.800000.npy"
+    #     image_npy_dirs.append(image_npy_dir)
+    #     mask_file_dirs.append(mask_file_dir)
+    #     dest_file_names.append(dest_file_name)
 
     # =========================================for ReLU function (B_ext_var enabled) simple small beta=========================================
     # for i in range(8):
@@ -478,7 +480,6 @@ class dirs:
     #     #     mask_file_dirs.append(mask_file_dir)
     #     #     dest_file_names.append(dest_file_name)
 
-
     # =========================================for ReLU function (B_ext_var enabled) simple big beta=========================================
 
     # mask_file_dir = "OUTPUT/simulation/sample/racetrack.png"
@@ -513,57 +514,54 @@ class dirs:
     #         image_npy_dirs.append(image_npy_dir)
     #         mask_file_dirs.append(mask_file_dir)
     #         dest_file_names.append(dest_file_name)
-        # if i == 5:
-        #     mask_file_dir = "OUTPUT/ROMMING_big_beta_traj_test_FINAL_Mask_final_ReLU_high_beta_modular_atomistic_ReLU_changed_capacity_open_heun_1.5_0.9_0/sample_1_0_deg_0.9_v_s_fac/sample_1_0_deg_0.9_v_s_fac/racetrack.png"
-        #     dest_file_name = "temp_simple_ReLU_big_beta_79_new.png"
-        #     image_npy_dir = "OUTPUT/ROMMING_big_beta_traj_test_FINAL_Mask_final_ReLU_high_beta_modular_atomistic_ReLU_changed_capacity_open_heun_1.5_0.9_0/sample_1_0_deg_0.9_v_s_fac/data/Spins_at_t_0079.000000.npy"
-        #     image_npy_dirs.append(image_npy_dir)
-        #     mask_file_dirs.append(mask_file_dir)
-        #     dest_file_names.append(dest_file_name)
-        # if i == 6:
-        #     mask_file_dir = "OUTPUT/ROMMING_big_beta_traj_test_FINAL_Mask_final_ReLU_high_beta_modular_atomistic_ReLU_changed_capacity_open_heun_1.5_0.9_0/sample_1_0_deg_0.9_v_s_fac/sample_1_0_deg_0.9_v_s_fac/racetrack.png"
-        #     dest_file_name = "temp_simple_ReLU_big_beta_12_new.png"
-        #     image_npy_dir = "OUTPUT/ROMMING_big_beta_traj_test_FINAL_Mask_final_ReLU_high_beta_modular_atomistic_ReLU_changed_capacity_open_heun_1.5_0.9_0/sample_1_0_deg_0.9_v_s_fac/data/Spins_at_t_0012.000000.npy"
-        #     image_npy_dirs.append(image_npy_dir)
-        #     mask_file_dirs.append(mask_file_dir)
-        #     dest_file_names.append(dest_file_name)
-        # if i == 7:
-        #     mask_file_dir = "OUTPUT/ROMMING_big_beta_traj_test_FINAL_Mask_final_ReLU_high_beta_modular_atomistic_ReLU_changed_capacity_open_heun_1.5_0.9_0/sample_1_0_deg_0.9_v_s_fac/sample_1_0_deg_0.9_v_s_fac/racetrack.png"
-        #     dest_file_name = "temp_simple_ReLU_big_beta_end_new.png"
-        #     image_npy_dir = "OUTPUT/ROMMING_big_beta_traj_test_FINAL_Mask_final_ReLU_high_beta_modular_atomistic_ReLU_changed_capacity_open_heun_1.5_0.9_0/sample_1_0_deg_0.9_v_s_fac/data/Spins_at_t_0056.800000.npy"
-        #     image_npy_dirs.append(image_npy_dir)
-        #     mask_file_dirs.append(mask_file_dir)
-        #     dest_file_names.append(dest_file_name)
-
-
-
+    # if i == 5:
+    #     mask_file_dir = "OUTPUT/ROMMING_big_beta_traj_test_FINAL_Mask_final_ReLU_high_beta_modular_atomistic_ReLU_changed_capacity_open_heun_1.5_0.9_0/sample_1_0_deg_0.9_v_s_fac/sample_1_0_deg_0.9_v_s_fac/racetrack.png"
+    #     dest_file_name = "temp_simple_ReLU_big_beta_79_new.png"
+    #     image_npy_dir = "OUTPUT/ROMMING_big_beta_traj_test_FINAL_Mask_final_ReLU_high_beta_modular_atomistic_ReLU_changed_capacity_open_heun_1.5_0.9_0/sample_1_0_deg_0.9_v_s_fac/data/Spins_at_t_0079.000000.npy"
+    #     image_npy_dirs.append(image_npy_dir)
+    #     mask_file_dirs.append(mask_file_dir)
+    #     dest_file_names.append(dest_file_name)
+    # if i == 6:
+    #     mask_file_dir = "OUTPUT/ROMMING_big_beta_traj_test_FINAL_Mask_final_ReLU_high_beta_modular_atomistic_ReLU_changed_capacity_open_heun_1.5_0.9_0/sample_1_0_deg_0.9_v_s_fac/sample_1_0_deg_0.9_v_s_fac/racetrack.png"
+    #     dest_file_name = "temp_simple_ReLU_big_beta_12_new.png"
+    #     image_npy_dir = "OUTPUT/ROMMING_big_beta_traj_test_FINAL_Mask_final_ReLU_high_beta_modular_atomistic_ReLU_changed_capacity_open_heun_1.5_0.9_0/sample_1_0_deg_0.9_v_s_fac/data/Spins_at_t_0012.000000.npy"
+    #     image_npy_dirs.append(image_npy_dir)
+    #     mask_file_dirs.append(mask_file_dir)
+    #     dest_file_names.append(dest_file_name)
+    # if i == 7:
+    #     mask_file_dir = "OUTPUT/ROMMING_big_beta_traj_test_FINAL_Mask_final_ReLU_high_beta_modular_atomistic_ReLU_changed_capacity_open_heun_1.5_0.9_0/sample_1_0_deg_0.9_v_s_fac/sample_1_0_deg_0.9_v_s_fac/racetrack.png"
+    #     dest_file_name = "temp_simple_ReLU_big_beta_end_new.png"
+    #     image_npy_dir = "OUTPUT/ROMMING_big_beta_traj_test_FINAL_Mask_final_ReLU_high_beta_modular_atomistic_ReLU_changed_capacity_open_heun_1.5_0.9_0/sample_1_0_deg_0.9_v_s_fac/data/Spins_at_t_0056.800000.npy"
+    #     image_npy_dirs.append(image_npy_dir)
+    #     mask_file_dirs.append(mask_file_dir)
+    #     dest_file_names.append(dest_file_name)
 
     # for the pinning picture
     # for i in range(4):
-        # if i == 0:
-        #     mask_file_dir = "needed_files/Mask_track_corner_stuck.png"
-        #     dest_file_name = "temp_full_hex_current_corner_stuck.png"
-        #     image_dirs.append(None)
-        #     mask_file_dirs.append(mask_file_dir)
-        #     dest_file_names.append(dest_file_name)
-        # if i == 1:
-        #     mask_file_dir = "needed_files/Mask_track_corner_through.png"
-        #     dest_file_name = "temp_full_hex_current_corner_through.png"
-        #     image_dirs.append(None)
-        #     mask_file_dirs.append(mask_file_dir)
-        #     dest_file_names.append(dest_file_name)
-        # if i == 2:
-        #     mask_file_dir = "needed_files/Mask_track_narrowing_through.png"
-        #     dest_file_name = "temp_full_hex_current_narrowing_through.png"
-        #     image_dirs.append(None)
-        #     mask_file_dirs.append(mask_file_dir)
-        #     dest_file_names.append(dest_file_name)
-        # if i == 3:
-        #     mask_file_dir = "needed_files/Mask_track_narrowing_stuck.png"
-        #     dest_file_name = "temp_full_hex_current_stuck_narrowing.png"
-        #     image_dirs.append(None)
-        #     mask_file_dirs.append(mask_file_dir)
-        #     dest_file_names.append(dest_file_name)
+    # if i == 0:
+    #     mask_file_dir = "needed_files/Mask_track_corner_stuck.png"
+    #     dest_file_name = "temp_full_hex_current_corner_stuck.png"
+    #     image_dirs.append(None)
+    #     mask_file_dirs.append(mask_file_dir)
+    #     dest_file_names.append(dest_file_name)
+    # if i == 1:
+    #     mask_file_dir = "needed_files/Mask_track_corner_through.png"
+    #     dest_file_name = "temp_full_hex_current_corner_through.png"
+    #     image_dirs.append(None)
+    #     mask_file_dirs.append(mask_file_dir)
+    #     dest_file_names.append(dest_file_name)
+    # if i == 2:
+    #     mask_file_dir = "needed_files/Mask_track_narrowing_through.png"
+    #     dest_file_name = "temp_full_hex_current_narrowing_through.png"
+    #     image_dirs.append(None)
+    #     mask_file_dirs.append(mask_file_dir)
+    #     dest_file_names.append(dest_file_name)
+    # if i == 3:
+    #     mask_file_dir = "needed_files/Mask_track_narrowing_stuck.png"
+    #     dest_file_name = "temp_full_hex_current_stuck_narrowing.png"
+    #     image_dirs.append(None)
+    #     mask_file_dirs.append(mask_file_dir)
+    #     dest_file_names.append(dest_file_name)
 
 
 class csts:
@@ -736,11 +734,20 @@ def solve_neumann_problem(mask_file_dir, steps, model, vs=-0.05, neumann_temp_di
         if os.path.exists(temp_dir):
             with np.load(temp_dir) as data:
                 if np.array_equal(data["mask"], mask) and np.array_equal(data["steps"], steps):
-                    logging.warning(f"temp file found with the same calculation steps -> no calculation done, taken from temp")
+                    logging.warning(
+                        f"temp file found with the same calculation steps\n"
+                        f"Mask shape: {mask.shape};\n"
+                        f"Steps: {steps}\n"
+                        f"-> no calculation done, taken from temp"
+                    )
                     return data["phi"], data["j"]
         if i == 99:
-            logging.warning(f"no temp file found with same mask and calculation steps as metadata, calculating new data")
-    
+            logging.warning(
+                f"no temp file found with same mask and calculation steps as metadata\n"
+                f"Mask: {mask};\n"
+                f"Steps: {steps}\n"
+                f"-> Calculating new data"
+            )
 
     logging.info(f"mask to gpu")
     mask_id = cuda.mem_alloc(mask.nbytes)
@@ -945,7 +952,7 @@ def solve_neumann_problem(mask_file_dir, steps, model, vs=-0.05, neumann_temp_di
             break
         if i == 99:
             raise ValueError("Too many temp files")
-    
+
     logging.warning(f"saving temp file to {temp_dir}\n")
     np.savez_compressed(
         temp_dir,
@@ -1009,7 +1016,9 @@ def main():
 
         # ---------------------------------------------------------------Data Plot-------------------------------------------------------------------
 
-        current_and_potential_plot(current_data, potential_data, dest_dir, model=sim_model_for_main, dest_file_name=dest_file_name, image_dir=image_dir)
+        current_and_potential_plot(
+            current_data, potential_data, dest_dir, model=sim_model_for_main, dest_file_name=dest_file_name, image_dir=image_dir
+        )
 
 
 if __name__ == "__main__":

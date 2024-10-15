@@ -9,7 +9,7 @@ import numpy as np
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 # Navigate one level up from the current script's directory
-parent_directory = os.path.abspath(os.path.join(__file__,"..", ".."))
+parent_directory = os.path.abspath(os.path.join(__file__, "..", ".."))
 logging.info(f"Parent directory: {parent_directory}")
 
 # original cwd:
@@ -21,6 +21,7 @@ os.chdir(parent_directory)
 
 # from skyrmion_simulation.python_scripts.skyrmion_simulation import main as ss
 
+
 class TestSkyrmionSimulations(ut.TestCase):
 
     def setUp(self):
@@ -31,7 +32,7 @@ class TestSkyrmionSimulations(ut.TestCase):
             for dir in dirs:
                 if dir == "__pycache__":
                     os.system(f"rm -r {os.path.join(root, dir)}")
-        
+
         # execute setup_env.sh in testing directory
         os.system(f"bash {os.path.join(parent_directory, 'testing', 'setup_env_physnet.sh')}")
 
@@ -47,20 +48,22 @@ class TestSkyrmionSimulations(ut.TestCase):
             "wall_retention",
             "wall_ret_test_close",
             "wall_ret_test_far",
-            "skyr_creation",    # q_r_vs_time plot wrong
+            "skyr_creation",  # q_r_vs_time plot wrong
             "x_current_SkH_test",
-            "angled_vs_on_edge",   # depending on mask_dir either with or without atomic step
+            "angled_vs_on_edge",  # depending on mask_dir either with or without atomic step
+            "pinning_tests",
+            "ReLU",  # fix plot input output
+            "ReLU_larger_beta",  # fix plot input output
         ]
 
     def test_simulation(self):
         for sim_type in self.sim_types:
             with self.subTest(sim_type=sim_type):
                 logging.warning(f"RUNNING TEST: {sim_type}")
-                result = subprocess.run(['python', 'skyrmion_simulation/python_scripts/skyrmion_simulation.py', '--sim_type', sim_type],
-                                        capture_output=True,
-                                        text=True
-                                        )
-                
+                result = subprocess.run(
+                    ["python", "skyrmion_simulation/python_scripts/skyrmion_simulation.py", "--sim_type", sim_type], capture_output=True, text=True
+                )
+
                 # save the consolt output to a file
                 os.chdir(orig_cwd)
                 with open(self.output_file, "w") as f:
@@ -69,6 +72,7 @@ class TestSkyrmionSimulations(ut.TestCase):
 
                 # verify that the process was successful
                 self.assertEqual(result.returncode, 0, f"Process failed with return code {result.returncode} for {sim_type}")
+
 
 if __name__ == "__main__":
     ut.main()
