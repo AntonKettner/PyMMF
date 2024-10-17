@@ -10,9 +10,6 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 
-# import matplotlib.ticker as tck
-
-
 def setup_plt():
 
     matplotlib.use("Agg")
@@ -50,16 +47,6 @@ def create_input_output_plot(fetchpath, destpath, dest_file):
 
     logging.info(f"traj_q data: {traj_q.dtype.names}")
 
-    # # Determine the number of fields
-    # num_fields = len(traj_q.dtype.names)
-
-    # # Create a new array where each record is a row
-    # regular_array = np.empty((len(traj_q), num_fields))
-
-    # # Copy data from each field
-    # for i, name in enumerate(traj_q.dtype.names):
-    #     regular_array[:, i] = traj_q[name]
-
     t = traj_q["time"]
     q = traj_q["topological_charge"]
     l = traj_q["left_count"]
@@ -73,10 +60,6 @@ def create_input_output_plot(fetchpath, destpath, dest_file):
     l = l[indices_to_keep]
     r = r[indices_to_keep]
 
-    # logging.info(f"q: {q}")
-
-    # logging.info(f"traj_q: {traj_q}")
-
     # löschen von file in dest_path, falls es existiert
     if os.path.exists(f"{destpath}/{dest_file}"):
         os.remove(f"{destpath}/{dest_file}")
@@ -86,19 +69,6 @@ def create_input_output_plot(fetchpath, destpath, dest_file):
         os.makedirs(f"{destpath}")
 
     # ---------------------------------------------------------------Input Output plot-------------------------------------------------------------------
-
-    plt.figure()
-
-    # # add the path manually if necessary
-    # font_path = "//afs/physnet.uni-hamburg.de/users/AU/akettner/.conda/envs/2_pycuda/fonts/cmunrm.ttf"
-    # matplotlib.font_manager.fontManager.addfont(font_path)
-
-    # plt.rcParams["font.family"] = "CMU Serif"
-    # plt.rcParams["font.serif"] = "CMU Serif Roman"
-
-    # # logging.info(f"q.shape: {q.shape}")
-    # logging.info(f"r.shape: {r.shape}")
-    # logging.info(f"t.shape: {t.shape}")
 
     # clear all values of q and r, where r is the same value as the previous one
     indices_to_remove_for_output = []
@@ -119,27 +89,11 @@ def create_input_output_plot(fetchpath, destpath, dest_file):
     q = q[:-1]
     t_for_input = t_for_input[:-1]
 
-    # logging.info(f"q.shape: {q.shape}")
-    # logging.info(f"q: {q}")
-    # logging.info(f"r.shape: {r.shape}")
-    # logging.info(f"r: {r}")
-    # logging.info(f"t_for_output.shape: {t_for_output.shape}")
-    # logging.info(f"t_for_output: {t_for_output}")
-    # logging.info(f"t_for_input.shape: {t_for_input.shape}")
-    # logging.info(f"t_for_input: {t_for_input}")
-    # q_filtered = np.delete(q, indices_to_remove_for_output)
-
-    # clear last value of q and r
-    # q_filtered = q_filtered[:-1]
-    # plt.style.use("dark_background")
-
+    # =========================================for thesis input output plot=========================================
+    plt.figure()
     plt.plot(t_for_output, r, "-o", label="Output", color="red")
-    # plt.plot(abs(q), abs(q), "wo", label="Input")
-
-    # for thesis
     plt.plot(t_for_input, abs(q), "-o", label="Input", color="black")
 
-    # plt.title("Input - Output")
     legend = plt.legend(loc="upper left", fontsize=15)
     legend.get_frame().set_facecolor("none")
     legend.get_frame().set_edgecolor("black")  # Set the rim color to black
@@ -154,22 +108,16 @@ def create_input_output_plot(fetchpath, destpath, dest_file):
     plt.savefig(f"{destpath}/{dest_file}", dpi=800, transparent=True)
     plt.close()
 
-    # times between cavity pop
+    # =========================================times between cavity pop=========================================
     plt.figure()
-
     std_delta_t = t_for_input[2] - t_for_input[1]
-
     times_between_cavity_pop = t_for_output[1:] - t_for_output[:-1]
     r = r[1:]
-
     times_between_cavity_pop = times_between_cavity_pop[r != 0]
     r = r[r != 0]
-
     plt.plot(r, times_between_cavity_pop, "o", color="black")
     logging.info(f"times_between_cavity_pop: {times_between_cavity_pop}")
     logging.info(f"r: {r}")
-    # set x axis to log scale
-    # plt.yscale("log")
     plt.ylim(std_delta_t - 3, std_delta_t + 3)
     plt.xlabel(r"Output $N_{\mathrm{Sk}}$", fontsize=15)
     plt.ylabel(r"Time after last Output $\Delta t$ [ns]", fontsize=15)
@@ -177,6 +125,7 @@ def create_input_output_plot(fetchpath, destpath, dest_file):
     plt.savefig(f"{destpath}/Out_Dt_with_lims_{dest_file}", dpi=800, transparent=True)
     plt.close()
 
+    # ========================================Times between cavity pop no limits==========================================
     plt.figure()
     plt.plot(r, times_between_cavity_pop, "o", color="black")
     plt.xlabel(r"Output $N_{\mathrm{Sk}}$", fontsize=15)
