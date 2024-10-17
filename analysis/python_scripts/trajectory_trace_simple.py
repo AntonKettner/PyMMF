@@ -12,12 +12,13 @@ import matplotlib.pyplot as plt
 
 # import matplotlib.ticker as tck
 
+
 def setup_plt():
     matplotlib.use("Agg")
 
-    plt.rcParams['text.usetex'] = True
-    plt.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}\usepackage{bm}'
-    plt.rcParams['font.family'] = 'serif'
+    plt.rcParams["text.usetex"] = True
+    plt.rcParams["text.latex.preamble"] = r"\usepackage{amsmath}\usepackage{bm}"
+    plt.rcParams["font.family"] = "serif"
 
 
 def linear_fit(x, y):
@@ -44,7 +45,7 @@ def linear_fit(x, y):
 
 
 def trajectory_trace(
-    fetch_dirs, dest_dir, native_v_s_factor=10, v_s_to_j_s_factor=1.61e10, dest_file="trajectory3thesis.png", title="Trajectory of Skyrmion"
+    fetch_folder_name, dest_dir, native_v_s_factor=10, v_s_to_j_s_factor=1.61e10, dest_file="trajectory3thesis.png", title="Trajectory of Skyrmion"
 ):
     # fetch the traj_q file from the fetch folder
 
@@ -57,6 +58,9 @@ def trajectory_trace(
     y_max_global = -np.inf
     x_min_global = np.inf
     x_max_global = -np.inf
+
+    # subfolders in fetch_folder_name
+    fetch_dirs = [f.path for f in os.scandir(fetch_folder_name) if f.is_dir()]
 
     if isinstance(fetch_dirs, str):
         fetch_dirs = [fetch_dirs]
@@ -100,7 +104,6 @@ def trajectory_trace(
         except:
             logging.warning("v_s_fac not found in fetch_dir, taking v_s_fac as 1")
             v_s_fac = 1
-
 
         j_s = v_s_fac * native_v_s_factor * v_s_to_j_s_factor
         logging.info(f"j_s: {j_s}")
@@ -195,7 +198,6 @@ def trajectory_trace(
 
         # plt.style.use("dark_background")
 
-
         # plt.rcParams["font.family"] = "CMU Serif"
         # plt.rcParams["font.serif"] = "CMU Serif Roman"
 
@@ -287,12 +289,9 @@ def main():
     # vs = 8  # 15, 8
     # B_ext = 1.5  # 1.5, 1.15
 
-    fetch_folder_name = f"OUTPUT/ROMMING_working_on_final_x_current_atomistic_x_current_open_heun_1.5_0.25_0"
+    fetch_folder_name = f"../../OUTPUT/wall_ret_test_middle_wall_ret_test"
 
-    dest_folder = f"OUTPUT/trajectories"
-
-    # subfolders in fetch_folder_name
-    subfolders = [f.path for f in os.scandir(fetch_folder_name) if f.is_dir()]
+    dest_folder = f"../../OUTPUT/trajectories"
 
     native_v_s_factor = 10  # 200 v_s_factor * 0.05 (s. num methods)
 
@@ -304,7 +303,21 @@ def main():
 
     # for i, subfolder in enumerate(subfolders):
 
-    trajectory_trace(subfolders, dest_folder, native_v_s_factor, v_s_to_j_s_factor, dest_file="trajectory.png", title="Trajectories")
+    # trajectory_trace(subfolders, dest_folder, native_v_s_factor, v_s_to_j_s_factor, dest_file="trajectory.png", title="Trajectories")
+
+    # fetch_folder_name = f"/afs/physnet.uni-hamburg.de/users/AU/akettner/Projekt_PyCUDA/PyMMF/OUTPUT/wall_ret_test_middle_wall_ret_test"
+    # dest_folder = f"/afs/physnet.uni-hamburg.de/users/AU/akettner/Projekt_PyCUDA/PyMMF/OUTPUT/trajectories"
+
+    # fetch dirs not files in fetch_folder_name
+    for entry in os.scandir(fetch_folder_name):
+        if entry.is_dir():
+            fetch_folder = os.path.join(fetch_folder_name, entry.name)
+            logging.info(f"fetch_folder: {fetch_folder}")
+            dest_file = f"trajectory_{entry.name}.png"
+            try:
+                trajectory_trace(fetch_folder_name, dest_folder, native_v_s_factor, v_s_to_j_s_factor, dest_file=dest_file, title="Trajectories")
+            except:
+                logging.error(f"Error for {entry.name}")
 
     # ---------------------------------------------------------------Trajectory, q, r triple plot-------------------------------------------------------------------
 

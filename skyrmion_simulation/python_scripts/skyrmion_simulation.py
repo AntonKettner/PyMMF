@@ -29,9 +29,18 @@ from numpy.linalg import norm as value
 from PIL import Image  # Das csv - Paket wird zum Speichern der CSV - Datei benutzt
 from tqdm import tqdm
 
+# logging config
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+
 import matplotlib
 
-matplotlib.use("Qt5Agg")
+# if os.environ.get("DISPLAY", "") == "":
+#     logging.info("No display found. Using non-interactive Agg backend.")
+matplotlib.use("Agg")
+# else:
+#     logging.info("Display found. Using interactive Qt5Agg backend.")
+#     matplotlib.use("Qt5Agg")
+
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 
@@ -52,9 +61,6 @@ parent_directory = os.path.abspath(os.path.join(__file__, "..", "..", ".."))
 
 # Add the parent directory to sys.path to access modules from there
 sys.path.insert(0, parent_directory)
-
-# logging config
-logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 # Local application imports
 from current_calculation import current_calculation as cc
@@ -305,12 +311,12 @@ class sim:
     steps_per_avg (int)             : Number of steps per averaging interval.
     atomistic_upscaling_factor (int): Upscaling factor for atomistic simulations.
 
-    METHODS                                      :
-    - __init__()                                 : Initializes the simulation parameters.
-    - calc_steps_per_avg()                       : Calculates the number of steps per average.
-    - spa_guess(x)                               : Provides an initial guess for steps per average calculation.
-    - compile_kernel(current_ext_field)          : Compiles the CUDA kernel with the given external field.
-    - get_kernel_functions(mod)                  : Retrieves the kernel functions from the compiled module.
+    METHODS:
+    - __init__()                       : Initializes the simulation parameters.
+    - calc_steps_per_avg()             : Calculates the number of steps per average.
+    - spa_guess(x)                     : Provides an initial guess for steps per average calculation.
+    - compile_kernel(current_ext_field): Compiles the CUDA kernel with the given external field.
+    - get_kernel_functions(mod)        : Retrieves the kernel functions from the compiled module.
     """
 
     # ---------------------------------------------------------------Attributes: Basic Sim Params-------------------------------------------------------------------
@@ -351,8 +357,9 @@ class sim:
         - "rk4"  : Can be used with a max time step of 0.000051.
         - "heun" : Can be used with a max time step of 0.000018.
         """
+
         # SIMULATION TYPES: "skyrmion_creation" or "wall_retention" or "wall_ret_test_close" or "wall_ret_test_far" or
-        # SIMULATION TYPES: "angled_vs_on_edge" or "x_current" or "x_current_SkH_test" or "pinning_tests" or "ReLU" or "ReLU_larger_beta"
+        #                   "angled_vs_on_edge" or "x_current" or "x_current_SkH_test" or "pinning_tests" or "ReLU" or "ReLU_larger_beta"
         cls.sim_type = sim_type
 
         if cls.calculation_method == "euler":
@@ -372,18 +379,19 @@ class sim:
         # only needed for wall_ret_test_new
         cls.distances = np.array([])
 
-        if sim.sim_type == "wall_retention":
+        if cls.sim_type == "wall_retention":
             # Output dir name
             cls.fig = "Thesis_Fig_9"
 
             # sim_vars
-            cls.tmax = 20
-            cls.No_sim_img = 1000
+            # cls.t_max = 20
+            cls.t_max = 2
+            # cls.No_sim_img = 1000
+            cls.No_sim_img = 100
             cst.beta = cst.alpha
             cst.betas = np.array([cst.beta], dtype=np.float32)
 
             # set the map
-            # cls.mask_dir = "needed_files/Mask_track_test_5.png"
             cls.mask_dir = "needed_files/Mask_track_100100atomic.png"
 
             # load the mask and get the size of the mask
@@ -402,12 +410,12 @@ class sim:
             cls.v_s_to_wall = False
             cls.v_s_positioning = False
 
-        elif sim.sim_type == "angled_vs_on_edge":
-            cls.fig = "Figure_12"
+        elif cls.sim_type == "angled_vs_on_edge":
+            cls.fig = "Thesis_Fig_12"
             # sim_vars
-            cls.t_max = 2
+            cls.t_max = 50
             cst.beta = cst.alpha
-            cls.No_sim_img = 20
+            cls.No_sim_img = 1000
 
             # set the map
             cls.mask_dir = "needed_files/Mask_track_test.png"
@@ -423,8 +431,10 @@ class sim:
 
             # v_s properties
             cls.bottom_angles = np.linspace(3, 9, 49, endpoint=True) * -1
+            cls.bottom_angles = np.linspace(3, 9, 4, endpoint=True) * -1
             cls.v_s_factors = np.linspace(0.5, 30.5, 31, endpoint=True) * -1
-            cls.samples = sim.bottom_angles.shape[0] * sim.v_s_factors.shape[0]
+            cls.v_s_factors = np.linspace(0.5, 30.5, 4, endpoint=True) * -1
+            cls.samples = cls.bottom_angles.shape[0] * cls.v_s_factors.shape[0]
             cst.betas = np.ones((cls.samples)) * cst.alpha
             cst.B_fields = np.ones((cls.samples)) * cst.B_ext
             cls.v_s_to_wall = False
@@ -433,7 +443,7 @@ class sim:
             cls.v_s_centering = False
             cls.apply_bottom_angle = False
 
-        elif sim.sim_type == "skyrmion_creation":
+        elif cls.sim_type == "skyrmion_creation":
             cls.fig = "Thesis_Fig_8"
 
             # set the map
@@ -444,7 +454,7 @@ class sim:
 
             # vary r_skyr a little bit
             cls.t_max = 0.3
-            cls.No_sim_img = 500
+            cls.No_sim_img = 50
 
             # set the skyrmion parameters
             cls.final_skyr_No = 1
@@ -461,13 +471,13 @@ class sim:
             cls.v_s_to_wall = False
             cls.apply_bottom_angle = False
 
-        elif sim.sim_type == "x_current":
-            cls.fig = sim.sim_type
+        elif cls.sim_type == "x_current":
+            cls.fig = cls.sim_type
             # sim_vars
-            cls.t_max = 5
+            cls.t_max = 0.3
             cst.beta = cst.alpha
             cst.betas = np.array([cst.beta], dtype=np.float32)
-            cls.No_sim_img = 20
+            cls.No_sim_img = 10
 
             # set the map
             cls.mask_dir = "needed_files/Mask_track_free.png"
@@ -488,7 +498,7 @@ class sim:
             cls.v_s_centering = False
             cls.apply_bottom_angle = False
 
-        elif sim.sim_type == "x_current_SkH_test":
+        elif cls.sim_type == "x_current_SkH_test":
 
             cls.fig = "Thesis_Fig_11"
             # sim_vars
@@ -519,7 +529,7 @@ class sim:
 
             cst.B_fields = np.ones((cls.samples)) * cst.B_ext
 
-        elif sim.sim_type == "wall_ret_test_close":
+        elif cls.sim_type == "wall_ret_test_close":
             # Output dir name
             cls.fig = "Thesis_Fig_10_close"
             cls.t_max = 200
@@ -539,8 +549,8 @@ class sim:
             cls.skyr_set_y = cls.y_size / 2
 
             # v_s properties
-            sim.v_s_factors = np.array([0])
-            sim.apply_bottom_angle = False
+            cls.v_s_factors = np.array([0])
+            cls.apply_bottom_angle = False
             cls.v_s_active = True
             cls.v_s_dynamic = False
             cls.v_s_centering = False
@@ -552,11 +562,12 @@ class sim:
             dist_end = int(cls.x_size - 1.5 * cst.r_skyr * (1e-9 / cst.a))
             cls.distances = np.arange(dist_start, dist_end)
             cls.distances = np.unique(cls.distances)
-            sim.max_error = 0.00005
-            sim.cons_reach_threashold = 10
-            sim.samples = sim.bottom_angles.shape[0] * sim.v_s_factors.shape[0]
+            cls.distances = np.floor(np.linspace(dist_start, dist_end, 4))
+            cls.max_error = 0.00005
+            cls.cons_reach_threashold = 10
+            cls.samples = cls.bottom_angles.shape[0] * cls.v_s_factors.shape[0]
 
-        elif sim.sim_type == "wall_ret_test_far":
+        elif cls.sim_type == "wall_ret_test_far":
             # Output dir name
             cls.fig = "Thesis_Fig_10_far"
             cls.t_max = 800
@@ -576,8 +587,8 @@ class sim:
             cls.skyr_set_y = cls.y_size / 2
 
             # v_s properties
-            sim.v_s_factors = np.array([0])
-            sim.apply_bottom_angle = False
+            cls.v_s_factors = np.array([0])
+            cls.apply_bottom_angle = False
             cls.v_s_active = True
             cls.v_s_dynamic = False
             cls.v_s_centering = False
@@ -589,11 +600,12 @@ class sim:
             dist_end = int(cls.x_size - 4 * cst.r_skyr * (1e-9 / cst.a))
             cls.distances = np.arange(dist_start, dist_end)
             cls.distances = np.unique(cls.distances)
-            sim.max_error = 0.00005
-            sim.cons_reach_threashold = 10
-            sim.samples = sim.bottom_angles.shape[0] * sim.v_s_factors.shape[0]
+            cls.distances = np.floor(np.linspace(dist_start, dist_end, 4))
+            cls.max_error = 0.00005
+            cls.cons_reach_threashold = 10
+            cls.samples = cls.bottom_angles.shape[0] * cls.v_s_factors.shape[0]
 
-        elif sim.sim_type == "pinning_tests":
+        elif cls.sim_type == "pinning_tests":
             # CHOOSE ONE OF THOSE 4 options
             # cls.fig = "Thesis_Fig_13_1"
             # cls.mask_dir = "needed_files/Mask_track_narrowing_through.png"
@@ -608,7 +620,9 @@ class sim:
             # cls.mask_dir = "needed_files/Mask_track_corner_stuck.png"
 
             cls.t_max = 30
+            cls.t_max = 3
             cls.No_sim_img = 200
+            cls.No_sim_img = 20
             cst.beta = cst.alpha
             cst.betas = np.array([cst.beta], dtype=np.float32)
             cls.skyr_set_x = 20
@@ -621,13 +635,13 @@ class sim:
             cls.v_s_dynamic = True
             cls.v_s_centering = False
 
-        elif sim.sim_type == "ReLU":
+        elif cls.sim_type == "ReLU":
             # FINAL RESULTS:
             cls.fig = "Thesis_Fig_15"
             cls.mask_dir = "needed_files/Mask_final_ReLU_simplification_bigger_11.png"
             cls.final_skyr_No = 15
             cls.t_max = 100
-            cls.No_sim_img = 400
+            cls.No_sim_img = 50
             cls.skyr_set_x = 15
             cls.skyr_set_y = 140
             cls.v_s_factors = np.array([1])
@@ -639,7 +653,7 @@ class sim:
             cls.v_s_to_wall = False
             cst.beta = cst.alpha / 2
 
-        elif sim.sim_type == "ReLU_larger_beta":
+        elif cls.sim_type == "ReLU_larger_beta":
             # FINAL RESULTS:
             cls.fig = "Thesis_Fig_19"
             cls.mask_dir = "needed_files/Mask_final_ReLU_high_beta_modular.png"
@@ -659,6 +673,40 @@ class sim:
             cls.v_s_dynamic = True
             cls.v_s_centering = False
             cls.v_s_to_wall = False
+
+        elif cls.sim_type == "wall_ret_test":
+            # Output dir name
+            cls.fig = "wall_ret_test_middle"
+            cls.t_max = 40
+            cls.No_sim_img = 1000
+            cst.beta = cst.alpha
+            cst.betas = np.array([cst.beta], dtype=np.float32)
+
+            # set the map
+            cls.mask_dir = "needed_files/Mask_track_free.png"
+
+            # load the mask and get the size of the mask
+            cls.x_size, cls.y_size = cls.load_mask(cls.mask_dir)
+
+            # set skyrmion vars
+            cls.final_skyr_No = 1
+            cls.skyr_set_x = cls.x_size / 2
+            cls.skyr_set_y = cls.y_size / 2
+
+            # v_s properties
+            cls.v_s_factors = np.array([0])
+            cls.apply_bottom_angle = False
+            cls.v_s_active = True
+            cls.v_s_dynamic = False
+            cls.v_s_centering = False
+            cls.v_s_positioning = True
+            cls.check_variance = False
+
+            # set distances
+            cls.distances = np.array([int(cls.x_size - 3 * cst.r_skyr * (1e-9 / cst.a))])
+            cls.max_error = 0.00005
+            cls.cons_reach_threashold = 10
+            cls.samples = cls.bottom_angles.shape[0] * cls.v_s_factors.shape[0]
 
         else:
             raise ValueError("Invalid simulation type.")
@@ -1605,8 +1653,9 @@ class output:
         seismic = matplotlib.colormaps["seismic"]
 
         # Create a new colormap from the seismic colormap
-        # Set the 'bad' (NaN) color to black
         cls.custom_seismic = colors.ListedColormap(seismic(np.linspace(0, 1, 256)))
+
+        # Set the 'bad' (NaN) color to black
         cls.custom_seismic.set_bad(color="black")
 
         cls.skyrmion_dtype = [
@@ -1911,9 +1960,6 @@ class output:
     @staticmethod
     def current_and_potential_plot(current, potential, dest_dir, model="continuum"):
 
-        # required when current plot should be shown
-        matplotlib.use("TkAgg")
-
         # to convert from tecnical to physical current
         current *= -1
 
@@ -2146,16 +2192,17 @@ def simulate(sim_no, angle, v_s_fac):
     numerical_steps, avgStep, q_topo = sim.get_kernel_functions(mod)
 
     # picture before the relaxation
-    pic_dir = f"{output.dest}/sample_{sim_no+1}_{angle}_deg_{v_s_fac}_v_s_fac/z_before_relaxation.png"
+    sample_dir = f"{output.dest}/sample_{sim_no+1}_{angle}_deg_{v_s_fac}_v_s_fac"
+    pic_dir = f"{sample_dir}/z_before_relaxation.png"
     output.save_image(spins[:, :, 2], pic_dir)
 
     # relax the spinfield without a skyrmion
     relaxed_init_spins = spin.relax_but_hold_skyr(np.copy(spins), numerical_steps, skyr_counter)
-    pic_dir = f"{output.dest}/sample_{sim_no+1}_{angle}_deg_{v_s_fac}_v_s_fac/relaxed_z_before_skyr.png"
+    pic_dir = f"{sample_dir}/relaxed_z_before_skyr.png"
     output.save_image(relaxed_init_spins[:, :, 2], pic_dir)
 
     # save to relaxed_init npy
-    np.save(f"{output.dest}/sample_{sim_no+1}_{angle}_deg_{v_s_fac}_v_s_fac/relaxed_init_spins.npy", relaxed_init_spins)
+    np.save(f"{sample_dir}/relaxed_init_spins.npy", relaxed_init_spins)
 
     # calculate the topological charge of the relaxed spinfield
     q_topo(GPU.spins_id, GPU.mask_id, GPU.q_topo_id, block=(GPU.block_dim_x, GPU.block_dim_y, 1), grid=(GPU.grid_dim_x, GPU.grid_dim_y, 1))
@@ -2274,14 +2321,12 @@ def simulate(sim_no, angle, v_s_fac):
                 custom_relaxed_spins_z[custom_relaxed_spins_z == 0] = np.nan
 
                 # save the relaxed spinfield with the new skyrmion
-                pic_dir = f"{output.dest}/sample_{sim_no+1}_{angle}_deg_{v_s_fac}_v_s_fac/spinfield_t_{t - sim.t_pics[0] + sim.dt:011.6f}.png"
+                pic_dir = f"{sample_dir}/spinfield_t_{t - sim.t_pics[0] + sim.dt:011.6f}.png"
                 output.save_image(custom_relaxed_spins_z, pic_dir)
 
                 # SAVE THE NPY FILE IF WANTED
                 if sim.save_npys:
-                    npy_output_dir = (
-                        f"{output.dest}/sample_{sim_no+1}_{angle}_deg_{v_s_fac}_v_s_fac/data/Spins_at_t_{t - sim.t_pics[0] + sim.dt:011.6f}.npy"
-                    )
+                    npy_output_dir = f"{sample_dir}/data/Spins_at_t_{t - sim.t_pics[0] + sim.dt:011.6f}.npy"
                     np.save(npy_output_dir, relaxed_spins.astype(np.float16))
 
                 cuda.Context.synchronize()
@@ -2313,12 +2358,12 @@ def simulate(sim_no, angle, v_s_fac):
             custom_view_spins_z[custom_view_spins_z == 0] = np.nan
 
             # SAVE THE Z IMAGE AT t=t1
-            pic_dir = f"{output.dest}/sample_{sim_no+1}_{angle}_deg_{v_s_fac}_v_s_fac/spinfield_t_{t:011.6f}.png"
+            pic_dir = f"{sample_dir}/spinfield_t_{t:011.6f}.png"
             output.save_image(custom_view_spins_z, pic_dir)
 
             # SAVE THE NPY FILE IF WANTED
             if sim.save_npys:
-                npy_output_dir = f"{output.dest}/sample_{sim_no+1}_{angle}_deg_{v_s_fac}_v_s_fac/data/Spins_at_t_{t:011.6f}.npy"
+                npy_output_dir = f"{sample_dir}/data/Spins_at_t_{t:011.6f}.npy"
                 np.save(npy_output_dir, GPU.spins_evolved.astype(np.float16))
 
             # calculate topological charge with kernel
@@ -2795,7 +2840,7 @@ def simulate(sim_no, angle, v_s_fac):
     q_topo(GPU.spins_id, GPU.mask_id, GPU.q_topo_id, block=(GPU.block_dim_x, GPU.block_dim_y, 1), grid=(GPU.grid_dim_x, GPU.grid_dim_y, 1))
 
     # saving the last spins in x, y and z dir
-    final_pic_base_dir = f"{output.dest}/sample_{sim_no+1}_{angle}_deg_{v_s_fac}_v_s_fac/direction_spinfield_end_t_{t:011.6f}.png"
+    final_pic_base_dir = f"{sample_dir}/direction_spinfield_end_t_{t:011.6f}.png"
     output.save_images_x_y_z(GPU.spins_evolved, final_pic_base_dir)
 
     # fetch the results from the GPU
@@ -2809,11 +2854,11 @@ def simulate(sim_no, angle, v_s_fac):
 
     # Speicherung der Spins am Ende der Simulation als npy Datei
     if sim.save_npy_end:
-        file = f"{output.dest}/sample_{sim_no+1}_{angle}_deg_{v_s_fac}_v_s_fac/Spins_at_end.npy"
+        file = f"{sample_dir}/Spins_at_end.npy"
         np.save(file, GPU.spins_evolved)
 
     # Saving the location tracker and the topological charge tracker
-    np.save(f"{output.dest}/sample_{sim_no+1}_{angle}_deg_{v_s_fac}_v_s_fac/traj_q.npy", output.stat_tracker)
+    np.save(f"{sample_dir}/traj_q.npy", output.stat_tracker)
 
     # ziehen von zeitlich gemittelten Spins auf die CPU in das neue Array avgImg
     avgImg = np.empty_like(GPU.avgTex)
@@ -2823,7 +2868,7 @@ def simulate(sim_no, angle, v_s_fac):
     avgImg /= np.max(np.abs(avgImg))
 
     # Speichern der zeitlich gemittelten Spins
-    avg_pic_dir = f"{output.dest}/sample_{sim_no+1}_{angle}_deg_{v_s_fac}_v_s_fac/avg_z_component.png"
+    avg_pic_dir = f"{sample_dir}/avg_z_component.png"
     output.save_image(avgImg, avg_pic_dir)
 
     if sim.model_type == "atomistic":
@@ -3018,18 +3063,6 @@ def main(sim_type="x_current"):
                 logging.warning("no images deleted eventhough save_pics is False")
 
         try:
-            if sim.final_skyr_No > 1:
-                logging.info(f"CREATING INPUT OUTPUT PLOT FOR SAMPLE {sample+1}")
-                create_input_output_plot(fetchpath=sample_dir, destpath=sample_dir, dest_file=f"plot_input_output_{sim.sim_type}.png")
-
-            elif sim.sim_type == "skyrmion_creation":
-                logging.info(f"CREATING Q, r vs time plot {sample+1}")
-                create_q_r_vs_time_plot(fetch_dir=sample_dir, dest_dir=sample_dir, dest_file=f"plot_q_r_w_vs_time_{sim.sim_type}.png")
-
-            else:
-                logging.info(f"CREATING SIMPLE TRAJECTORY TRACE PLOT FOR SAMPLE {sample+1}")
-                trajectory_trace(fetch_dirs=sample_dir, dest_dir=sample_dir, dest_file=f"plot_trajectory_{sample + 1}.png")
-
             if sim.sim_type == "wall_retention" or sim.sim_type == "wall_retention_new" or sim.sim_type == "wall_retention_reverse_beta":
                 if sim.final_skyr_No <= 1:
                     logging.info(f"CREATING WALL RETENTION PLOT FOR SAMPLE {sample+1}")
@@ -3038,6 +3071,21 @@ def main(sim_type="x_current"):
             if sim.sim_type == "wall_ret_test_close" or sim.sim_type == "wall_ret_test_far":
                 logging.info(f"CREATING WALL current vs distance plot {sample+1}")
                 current_vs_distance_plot(fetch_dir=sample_dir, dest_dir=sample_dir, dest_file=f"current_vs_distance_{sample + 1}.png")
+
+            if sim.final_skyr_No > 1:
+                logging.info(f"CREATING INPUT OUTPUT PLOT FOR SAMPLE {sample+1}")
+                pop_times = create_input_output_plot(fetchpath=sample_dir, destpath=sample_dir, dest_file=f"plot_input_output_{sim.sim_type}.png")
+
+                # save pop times to npy file
+                np.save(f"{sample_dir}/pop_times.npy", pop_times)
+
+            elif sim.sim_type == "skyrmion_creation":
+                logging.info(f"CREATING Q, r vs time plot {sample+1}")
+                create_q_r_vs_time_plot(fetch_dir=sample_dir, dest_dir=sample_dir, dest_file=f"plot_q_r_w_vs_time_{sim.sim_type}.png")
+
+            else:
+                logging.info(f"CREATING SIMPLE TRAJECTORY TRACE PLOT FOR SAMPLE {sample+1}")
+                trajectory_trace(fetch_folder_name=sample_dir, dest_dir=sample_dir, dest_file=f"plot_trajectory_{sample + 1}.png")
         except Exception as e:
             logging.warning(f"One of the plot creations failed: {e}")
 

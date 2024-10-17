@@ -135,6 +135,8 @@ def create_input_output_plot(fetchpath, destpath, dest_file):
     plt.savefig(f"{destpath}/Out_Dt_no_lims_{dest_file}", dpi=800, transparent=True)
     plt.close()
 
+    return times_between_cavity_pop
+
 
 def main():
 

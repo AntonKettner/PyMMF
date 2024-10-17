@@ -12,11 +12,11 @@
 # Assigns ...GB of GPU memory to the job
 #$ -l h_vmem=12G
 
-# Sets the maximum walltime for the job 1h
+# Sets the maximum walltime for the job 100h
 #$ -l h_cpu=100:00:00
 
 # Sets the name of the job
-#$ -N "skyr_simulation"
+#$ -N "basic_tests"
 
 # Sets the gpu type to use --> for A100 use the graphit.q
 #$ -l gpu_gen=2080ti
@@ -24,16 +24,15 @@
 # Dir of the joblog file
 #$ -o $HOME/job_logs
 
-# Request a parallel environment (PE) with a certain number of CPU slots.
-# REMOVE THIS FOR SINGLE THREAD JOBS!
-# Available PEs are: mpi (for treads across as few nodes as possible) or smp (for threads on the same node).
-# #$ -pe mpi 4
-
+# # Request a parallel environment (PE) with a certain number of CPU slots.
+# # REMOVE THIS FOR SINGLE THREAD JOBS!
+# # Available PEs are: mpi (for treads across as few nodes as possible) or smp (for threads on the same node).
+# # $ -pe mpi 4
 module purge
-module load anaconda3/2023.03
+module load cuda/11.8.0
 module load texlive/2022
 module load ffmpeg/4.0.2
-module load cuda/11.8.0
+module load anaconda3/2023.03
 conda activate PyMMF_env
 echo -e "all modules purged, anaconda loaded, Anaconda Enviroment $(conda info --envs | grep "*" | cut -d " " -f 1) activated"
 echo "current directory:"
@@ -45,6 +44,5 @@ nvcc --version
 echo "Python version:"
 python --version
 
-# main part of the script --> executing the python scripts
-
-echo -e "\033[1;32m starting tests \033[0m"
+# python data_gen_thesis.py
+python testing_basic.py
