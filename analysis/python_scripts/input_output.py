@@ -1,128 +1,33 @@
 # reads in trajq file and plots the trajectory ([2] vs [3]) and the fits with a linear function
 
-import json
 import numpy as np
 import os
 import logging
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 import glob
-import shutil
-from PIL import Image
-from tqdm import tqdm
+import matplotlib
 import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
+
 
 # import matplotlib.ticker as tck
 
 
-def linear_fit(x, y):
-    """
-    Fit x and y data with a linear model and return the slope, intercept, and fitted data.
+def setup_plt():
 
-    Parameters:
-    x (array-like): The x-coordinates of the data.
-    y (array-like): The y-coordinates of the data.
+    matplotlib.use("Agg")
+    # add the path manually if necessary
+    font_path = "//afs/physnet.uni-hamburg.de/users/AU/akettner/.conda/envs/2_pycuda/fonts/cmunrm.ttf"
+    matplotlib.font_manager.fontManager.addfont(font_path)
 
-    Returns:
-    tuple: slope (a), intercept (b), fitted data (y_fit)
-    """
-    x = np.array(x)[:]  # Ensure x is a numpy array
-    y = np.array(y)[:]  # Ensure y is a numpy array too, for consistency
-
-    # Perform linear fit
-    a, b = np.polyfit(x, y, 1)
-
-    # Generate the fitted data
-    y_fit = a * x + b
-
-    return a, b, y_fit
-
-
-def format_func(value, tick_number):
-    return "{:.1g}".format(value)
-
-
-def angled_line_and_r(matrix, x, y, x_plus=1, y_plus=1, red=0, max_r=200):
-    # the default is 45 deg
-    values = []
-
-    # Get matrix dimensions
-    rows, cols = matrix.shape
-
-    while 0 <= x < rows and 0 <= y < cols:
-        values.append(matrix[x, y] - red)
-        x += x_plus
-        y += y_plus
-
-    step_length = np.sqrt(x_plus**2 + y_plus**2)
-
-    # cut off at max_r
-    if len(values) * step_length > max_r:
-        values = values[: int(np.floor(max_r / step_length))]
-
-    r = np.arange(len(values)) * step_length
-
-    return np.array(values), r
-
-
-def avg(matrix, n):
-    # Ensure matrix is a numpy array
-    matrix = np.asarray(matrix)
-
-    # Check if matrix is 1D
-    if len(matrix.shape) != 1:
-        raise ValueError("The input matrix should be a 1D numpy array.")
-
-    # Create a uniform kernel of size 2*n + 1
-    kernel_size = 2 * n + 1
-    kernel = np.ones(kernel_size) / kernel_size
-
-    # Convolve data with the kernel
-    averaged_data = np.convolve(matrix, kernel, mode="same")
-
-    # Handle edge cases
-    for i in range(n):
-        averaged_data[i] = matrix[: i + n + 1].mean()
-        averaged_data[-(i + 1)] = matrix[-(i + n + 1) :].mean()
-
-    return averaged_data
-
-
-def find_skyr_center(m_z, idx):
-    """
-    Determine the center of the skyrmion using a weighted center of mass approach.
-
-    Parameters:
-    m_z (2D numpy array): The mz component of the magnetization.
-
-    Returns:
-    tuple: The coordinates (y_center, x_center) of the skyrmion center.
-    """
-    x_indices, y_indices = np.indices(m_z.shape)
-    density = -(m_z)  # goes from 0 to 2
-
-    print(f"density_max: {np.max(density)}") if idx == 0 else None
-    print(f"density_min: {np.min(density)}") if idx == 0 else None
-
-    sig = density  # **20
-
-    # density[density < 1] = 0
-
-    x_center = np.sum(x_indices * sig) / np.sum(sig)
-    y_center = np.sum(y_indices * sig) / np.sum(sig)
-
-    return x_center, y_center
+    plt.rcParams["font.family"] = "CMU Serif"
+    plt.rcParams["font.serif"] = "CMU Serif Roman"
+    plt.rcParams["mathtext.fontset"] = "cm"
 
 
 def create_input_output_plot(fetchpath, destpath, dest_file):
-    # fetch the imagepath from the fetch folder: spinfield_t_0001.805000.png
 
-    image_path_1_pattern = os.path.join(fetchpath, "**", "spinfield_t_0001.805000.png")
-
-    image_path_1 = glob.glob(image_path_1_pattern, recursive=True)
-
-    logging.info(f"image_path: {image_path_1}")
+    setup_plt()
 
     file = "traj_q.npy"
 
@@ -143,8 +48,6 @@ def create_input_output_plot(fetchpath, destpath, dest_file):
 
     traj_q = np.load(traj_q_file[0])
 
-    # logging.info(f"traj_q: {traj_q}")
-
     logging.info(f"traj_q data: {traj_q.dtype.names}")
 
     # # Determine the number of fields
@@ -157,9 +60,22 @@ def create_input_output_plot(fetchpath, destpath, dest_file):
     # for i, name in enumerate(traj_q.dtype.names):
     #     regular_array[:, i] = traj_q[name]
 
+    t = traj_q["time"]
     q = traj_q["topological_charge"]
     l = traj_q["left_count"]
     r = traj_q["right_count"]
+
+    # delete all values where t > 200 or q == 0
+    # indices_to_keep = np.where(np.logical_and(t < 180, q != 0))
+    indices_to_keep = np.where(q != 0)
+    t = t[indices_to_keep]
+    q = q[indices_to_keep]
+    l = l[indices_to_keep]
+    r = r[indices_to_keep]
+
+    # logging.info(f"q: {q}")
+
+    # logging.info(f"traj_q: {traj_q}")
 
     # löschen von file in dest_path, falls es existiert
     if os.path.exists(f"{destpath}/{dest_file}"):
@@ -173,47 +89,144 @@ def create_input_output_plot(fetchpath, destpath, dest_file):
 
     plt.figure()
 
+    # # add the path manually if necessary
+    # font_path = "//afs/physnet.uni-hamburg.de/users/AU/akettner/.conda/envs/2_pycuda/fonts/cmunrm.ttf"
+    # matplotlib.font_manager.fontManager.addfont(font_path)
+
+    # plt.rcParams["font.family"] = "CMU Serif"
+    # plt.rcParams["font.serif"] = "CMU Serif Roman"
+
+    # # logging.info(f"q.shape: {q.shape}")
+    # logging.info(f"r.shape: {r.shape}")
+    # logging.info(f"t.shape: {t.shape}")
+
     # clear all values of q and r, where r is the same value as the previous one
-    q_filtered = q.copy()
+    indices_to_remove_for_output = []
     for i in range(len(r) - 1):
         if r[i] == r[i + 1] and not r[i] == 0:
-            q_filtered[i] = np.nan
-            r[i] = np.nan
-
-    # clear all values of q and r, where r is the same value as the previous one
-    q_filtered = q_filtered[~np.isnan(q_filtered)]
-    r = r[~np.isnan(r)]
-
-    # clear last value of q and r, where r is the same value as the previous one
-    q_filtered = q_filtered[:-1]
+            indices_to_remove_for_output.append(i)
+    r = np.delete(r, indices_to_remove_for_output)
+    t_for_output = np.delete(t, indices_to_remove_for_output)
     r = r[:-1]
-    plt.style.use("dark_background")
+    t_for_output = t_for_output[:-1]
 
-    plt.plot(abs(q_filtered), r, "r-", label="Output")
-    plt.plot(abs(q), l, "wo", label="Input-Output")
+    indices_to_remove_for_input = []
+    for i in range(len(q) - 1):
+        if abs(q[i + 1]) - 0.1 < abs(q[i]) < abs(q[i + 1]) + 0.1:
+            indices_to_remove_for_input.append(i)
+    q = np.delete(q, indices_to_remove_for_input)
+    t_for_input = np.delete(t, indices_to_remove_for_input)
+    q = q[:-1]
+    t_for_input = t_for_input[:-1]
 
-    plt.title("Input - Output")
-    plt.legend(loc="upper left")
-    plt.xlabel("Q")
-    plt.ylabel("Output")
+    # logging.info(f"q.shape: {q.shape}")
+    # logging.info(f"q: {q}")
+    # logging.info(f"r.shape: {r.shape}")
+    # logging.info(f"r: {r}")
+    # logging.info(f"t_for_output.shape: {t_for_output.shape}")
+    # logging.info(f"t_for_output: {t_for_output}")
+    # logging.info(f"t_for_input.shape: {t_for_input.shape}")
+    # logging.info(f"t_for_input: {t_for_input}")
+    # q_filtered = np.delete(q, indices_to_remove_for_output)
+
+    # clear last value of q and r
+    # q_filtered = q_filtered[:-1]
+    # plt.style.use("dark_background")
+
+    plt.plot(t_for_output, r, "-o", label="Output", color="red")
+    # plt.plot(abs(q), abs(q), "wo", label="Input")
+
+    # for thesis
+    plt.plot(t_for_input, abs(q), "-o", label="Input", color="black")
+
+    # plt.title("Input - Output")
+    legend = plt.legend(loc="upper left", fontsize=15)
+    legend.get_frame().set_facecolor("none")
+    legend.get_frame().set_edgecolor("black")  # Set the rim color to black
+    plt.xlabel(r"Time $t$ [ns]", fontsize=18)
+    plt.ylabel(r"No. of Skyrmions $N_{\mathrm{Sk}}$", fontsize=18)
+
+    # Increase the size of the numbers on the axes
+    plt.tick_params(axis="both", which="major", labelsize=14)
+
+    plt.grid()
     plt.tight_layout()
-    plt.savefig(f"{destpath}/{dest_file}", dpi=800)
+    plt.savefig(f"{destpath}/{dest_file}", dpi=800, transparent=True)
+    plt.close()
+
+    # times between cavity pop
+    plt.figure()
+
+    std_delta_t = t_for_input[2] - t_for_input[1]
+
+    times_between_cavity_pop = t_for_output[1:] - t_for_output[:-1]
+    r = r[1:]
+
+    times_between_cavity_pop = times_between_cavity_pop[r != 0]
+    r = r[r != 0]
+
+    plt.plot(r, times_between_cavity_pop, "o", color="black")
+    logging.info(f"times_between_cavity_pop: {times_between_cavity_pop}")
+    logging.info(f"r: {r}")
+    # set x axis to log scale
+    # plt.yscale("log")
+    plt.ylim(std_delta_t - 3, std_delta_t + 3)
+    plt.xlabel(r"Output $N_{\mathrm{Sk}}$", fontsize=15)
+    plt.ylabel(r"Time after last Output $\Delta t$ [ns]", fontsize=15)
+    plt.tight_layout()
+    plt.savefig(f"{destpath}/Out_Dt_with_lims_{dest_file}", dpi=800, transparent=True)
+    plt.close()
+
+    plt.figure()
+    plt.plot(r, times_between_cavity_pop, "o", color="black")
+    plt.xlabel(r"Output $N_{\mathrm{Sk}}$", fontsize=15)
+    plt.ylabel(r"Time after last Output $\Delta t$ [ns]", fontsize=15)
+    plt.grid()
+    plt.tight_layout()
+    plt.savefig(f"{destpath}/Out_Dt_no_lims_{dest_file}", dpi=800, transparent=True)
     plt.close()
 
 
 def main():
-    mode = "first_results_replica"
-    boundary = "open"  # "ferro", "open"
-    vs = 9  # 15, 8
-    B_ext = 1.5  # 1.5, 1.15
 
-    dest_file = f"input_output_{B_ext}_{boundary}_{vs}.png"
+    # fetch_folder_name = f"/afs/physnet.uni-hamburg.de/users/AU/akettner/Projekt_PyCUDA/ongoing_work/OUTPUT/results_{mode}_test_multitrack_{boundary}_boundary_rk4_{B_ext}_B_ext_{vs}_vs"
+    # fetch_folder_name = f"/afs/physnet.uni-hamburg.de/users/AU/akettner/Projekt_PyCUDA/ongoing_work/OUTPUT/ROMMING_FINAL_SIM_big_slowatomistic_ReLU_2.5_r_open_heun_1.5_2.5_0/sample_1_0_deg_2.5_v_s_fac"
+    # fetch_folder_name = f"/afs/physnet.uni-hamburg.de/users/AU/akettner/Projekt_PyCUDA/ongoing_work/OUTPUT/ROMMING_FINAL_ReLU_for_THESIS_test_both_betas_atomistic_ReLU_open_heun_1.5_1_0/sample_1_0_deg_1_v_s_fac"
+    # fetch_folder_name = f"/afs/physnet.uni-hamburg.de/users/AU/akettner/Projekt_PyCUDA/ongoing_work/OUTPUT/ROMMING_alt_B_ReLU_for_THESIS_Test_3_atomistic_ReLU_changed_capacity_open_heun_1.5_1.0_0/sample_2_0_deg_1.0_v_s_fac"
+    # fetch_folder_name = f"/afs/physnet.uni-hamburg.de/users/AU/akettner/Projekt_PyCUDA/ongoing_work/OUTPUT/ROMMING_alt_B_ReLU_for_THESIS_Test_atomistic_ReLU_changed_capacity_open_heun_1.5_1.0_0/sample_10_0_deg_1.0_v_s_fac"
 
-    fetch_folder_name = f"/afs/physnet.uni-hamburg.de/users/ap_r/akettner/Projekt_PyCUDA/ongoing_work/OUTPUT/results_{mode}_test_multitrack_{boundary}_boundary_rk4_{B_ext}_B_ext_{vs}_vs"
+    # dest_folder = f"/afs/physnet.uni-hamburg.de/users/AU/akettner/Projekt_PyCUDA/ongoing_work/OUTPUT/input_output"
 
-    dest_folder = f"/afs/physnet.uni-hamburg.de/users/ap_r/akettner/Projekt_PyCUDA/ongoing_work/OUTPUT/input_output"
+    # # create_input_output_plot(fetch_folder_name, dest_folder, dest_file)
 
-    create_input_output_plot(fetch_folder_name, dest_folder, dest_file)
+    # # for multiple folders in folder:
+    # fetch_folder_name = f"/afs/physnet.uni-hamburg.de/users/AU/akettner/Projekt_PyCUDA/ongoing_work/OUTPUT/ROMMING_alt_B_ReLU_for_THESIS_Test_atomistic_ReLU_changed_capacity_open_heun_1.5_1.0_0"
+    # fetch_folder_name = f"/afs/physnet.uni-hamburg.de/users/AU/akettner/Projekt_PyCUDA/ongoing_work/OUTPUT/ROMMING_alt_B_ReLU_for_THESIS_Test_3_atomistic_ReLU_changed_capacity_open_heun_1.5_1.0_0"
+    # # for original low beta
+    # fetch_folder_name = f"/afs/physnet.uni-hamburg.de/users/AU/akettner/Projekt_PyCUDA/ongoing_work/OUTPUT/ROMMING_alt_B_Mask_final_ReLU_simplification_bigger_11_atomistic_ReLU_changed_capacity_open_heun_1.5_1.0_0"
+    # fetch_folder_name = f"/afs/physnet.uni-hamburg.de/users/AU/akettner/Projekt_PyCUDA/ongoing_work/OUTPUT/ROMMING_big_beta_bias_test_FINAL_Mask_final_ReLU_high_beta_modular_atomistic_ReLU_changed_capacity_open_heun_1.5_1.0_0"
+    # # for low limit vs big beta
+    # fetch_folder_name = f"/afs/physnet.uni-hamburg.de/users/AU/akettner/Projekt_PyCUDA/ongoing_work/OUTPUT/ROMMING_big_beta_bias_test_FINAL_Mask_final_ReLU_high_beta_modular_atomistic_ReLU_changed_capacity_open_heun_1.5_0.9_0"
+    # # for mid vs big beta
+    # fetch_folder_name = f"/afs/physnet.uni-hamburg.de/users/AU/akettner/Projekt_PyCUDA/ongoing_work/OUTPUT/ROMMING_big_beta_bias_test_FINAL_Mask_final_ReLU_high_beta_modular_atomistic_ReLU_changed_capacity_open_heun_1.5_0.95_0"
+    # dest_folder = f"/afs/physnet.uni-hamburg.de/users/AU/akettner/Projekt_PyCUDA/ongoing_work/OUTPUT/input_output"
+    # # for upper limit vs big beta
+    # fetch_folder_name = f"/afs/physnet.uni-hamburg.de/users/AU/akettner/Projekt_PyCUDA/ongoing_work/OUTPUT/ROMMING_big_beta_bias_test_FINAL_Mask_final_ReLU_high_beta_modular_atomistic_ReLU_changed_capacity_open_heun_1.5_1.0_0"
+
+    # fetch_folder_name = f"/afs/physnet.uni-hamburg.de/users/AU/akettner/Projekt_PyCUDA/ongoing_work/OUTPUT/ROMMING_big_beta_bias_test_FINAL_Mask_final_ReLU_high_beta_modular_atomistic_ReLU_changed_capacity_open_heun_1.5_1.0_0"
+    fetch_folder_name = f"/afs/physnet.uni-hamburg.de/users/AU/akettner/Projekt_PyCUDA/PyMMF/OUTPUT/Thesis_Fig_15_ReLU"
+    dest_folder = f"/afs/physnet.uni-hamburg.de/users/AU/akettner/Projekt_PyCUDA/PyMMF/OUTPUT/input_output"
+
+    # fetch dirs not files in fetch_folder_name
+    for entry in os.scandir(fetch_folder_name):
+        if entry.is_dir():
+            fetch_folder = os.path.join(fetch_folder_name, entry.name)
+            logging.info(f"fetch_folder: {fetch_folder}")
+            dest_file = f"input_output_{entry.name}.png"
+            try:
+                create_input_output_plot(fetch_folder, dest_folder, dest_file)
+            except:
+                logging.error(f"Error for {entry.name}")
 
 
 if __name__ == "__main__":
