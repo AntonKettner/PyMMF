@@ -9,31 +9,12 @@ from PIL import Image
 import matplotlib
 import matplotlib.pyplot as plt
 
-# import matplotlib.ticker as tck
+# local imports
 
-
-def linear_fit(x, y):
-    """
-    Fit x and y data with a linear model and return the slope, intercept, and fitted data.
-
-    Parameters:
-    x (array-like): The x-coordinates of the data.
-    y (array-like): The y-coordinates of the data.
-
-    Returns:
-    tuple: slope (a), intercept (b), fitted data (y_fit)
-    """
-    x = np.array(x)[:]  # Ensure x is a numpy array
-    y = np.array(y)[:]  # Ensure y is a numpy array too, for consistency
-
-    # Perform linear fit
-    a, b = np.polyfit(x, y, 1)
-
-    # Generate the fitted data
-    y_fit = a * x + b
-
-    return a, b, y_fit
-
+if __name__ == "__main__":
+    from common_functions import setup_plt_with_tex
+elif __name__ == "analysis.angle_distance_plot":
+    from analysis.common_functions import setup_plt_with_tex
 
 def constant_fit(x, y):
     """
@@ -55,14 +36,6 @@ def constant_fit(x, y):
     return c[0]
 
 
-def setup_plt():
-    
-    # add the path manually if necessary
-    plt.rcParams['text.usetex'] = True
-    plt.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}\usepackage{bm}'
-    plt.rcParams['font.family'] = 'serif'
-
-
 def fetch_traj_q_file(fetch_dir, fetch_file="traj_q.npy"):
     # fetch the traj_q file from the fetch folder
     filename = fetch_file
@@ -75,7 +48,8 @@ def fetch_traj_q_file(fetch_dir, fetch_file="traj_q.npy"):
 
     # error catching
     if amount_of_traj_q_files != 1:
-        logging.error("There should be exactly one traj_q.npy file.")
+        logging.info(f"current working directory: {os.getcwd()}")
+        logging.error(f"There should be exactly one traj_q.npy file at {fetch_dir}.")
         if amount_of_traj_q_files == 0:
             logging.error("No traj_q.npy file was found.")
         elif amount_of_traj_q_files > 1:
@@ -86,7 +60,7 @@ def fetch_traj_q_file(fetch_dir, fetch_file="traj_q.npy"):
 
 
 def current_vs_distance_plot(fetch_dir, dest_dir, dest_file="angle_distance_overhaul_new.png", fetch_file="traj_q.npy"):
-    
+    matplotlib.use("Agg")
     traj_q = fetch_traj_q_file(fetch_dir, fetch_file)
 
     # fetch the spinfield from the fetch folder
@@ -95,7 +69,8 @@ def current_vs_distance_plot(fetch_dir, dest_dir, dest_file="angle_distance_over
     racetrack_files = glob.glob(racetrack_pattern, recursive=True)
     amount_of_race_track_files = len(glob.glob(racetrack_pattern, recursive=True))
     if amount_of_race_track_files != 1:
-        logging.error(f"There should be exactly one {racetrack_name} file.")
+        logging.info(f"current working directory: {os.getcwd()}")
+        logging.error(f"There should be exactly one {racetrack_name} file at {fetch_dir}.")
         if amount_of_race_track_files == 0:
             logging.error(f"No {racetrack_name} file was found.")
         elif amount_of_race_track_files > 1:
@@ -123,8 +98,8 @@ def current_vs_distance_plot(fetch_dir, dest_dir, dest_file="angle_distance_over
     vsy = traj_q["v_s_y"]
     logging.info(f"x: {x}")
     logging.info(f"r: {r}")
-    logging.info(f"vsx: {vsx[0:100]}")
-    logging.info(f"vsy: {vsy[0:100]}")
+    logging.info(f"last 100 vsx: {vsx[100:]}")
+    logging.info(f"last 100 vsy: {vsy[100:]}")
 
     # filter all elements of traj_q where vsx is 0
     valid_indices = np.where(np.logical_and(vsx != 0, True))[0][2:]  # [0]  # Get the array from the tuple x > 372
@@ -165,7 +140,7 @@ def current_vs_distance_plot(fetch_dir, dest_dir, dest_file="angle_distance_over
     # q = traj_q["topological_charge"]
     # r = traj_q["r1"]
 
-    setup_plt()
+    setup_plt_with_tex()
 
     alpha = 1
 
@@ -214,17 +189,20 @@ def current_vs_distance_plot(fetch_dir, dest_dir, dest_file="angle_distance_over
     # Plot vsx and vsy on the first y-axis
     ax1.plot(Delta_x, angle, "o", label=r"$\theta_{\vec{\bm{F}}}$", color="#00ff02", zorder=3, markersize=3)
 
-    # make a linear fit of the values of the angle up to from Delta_x = 7 to inf
-    fit_indices = np.where(Delta_x > 7)[0]
-    c = constant_fit(Delta_x[fit_indices], angle[fit_indices])
 
-    logging.info(rf"$\theta_{{\infty}}={c:.4g}$")
-    logging.info(f"max angle: {np.max(angle)}")
+    # =========================================ONLY FOR COMBINED GRAPHS:=========================================
+    # # make a linear fit of the values of the angle up to from Delta_x = 7 to inf
+    # fit_indices = np.where(Delta_x > 7)[0]
+    # c = constant_fit(Delta_x[fit_indices], angle[fit_indices])
 
-    # Plot the fit
-    ax1.axhline(y=c, linestyle="--", color="#00ff02", label=r"$\theta_{\vec{\bm{F}}}^{\infty}$", zorder=3)
+    # logging.info(rf"$\theta_{{\infty}}={c:.4g}$")
+    # logging.info(f"max angle: {np.max(angle)}")
 
-    ax1.axvline(x=7, linestyle="--", color="black", zorder=0, alpha=0.1)
+    # # Plot the fit
+    # ax1.axhline(y=c, linestyle="--", color="#00ff02", label=r"$\theta_{\vec{\bm{F}}}^{\infty}$", zorder=3)
+
+    # ax1.axvline(x=7, linestyle="--", color="black", zorder=0, alpha=0.1)
+
 
     ax1.set_ylabel(r"Edge repulsion angle $\theta_{\vec{\bm{F}}}$ [deg]", color="#00ff02", fontsize=12)
     ax1.set_xlabel(r"Distance skyrmion center to edge $\Delta$ [nm]", fontsize=12)
@@ -263,6 +241,7 @@ def current_vs_distance_plot(fetch_dir, dest_dir, dest_file="angle_distance_over
 
     fig.tight_layout()
     # Save the plot
+    logging.info(f"Saving plot to {dest_dir}/{dest_file}")
     plt.savefig(f"{dest_dir}/{dest_file}", dpi=800, transparent=True)
     plt.close()
     # plt.xlabel("x [0.3 nm]")
@@ -279,16 +258,16 @@ def current_vs_distance_plot(fetch_dir, dest_dir, dest_file="angle_distance_over
 
 def main():
     cwd = os.getcwd()
-    os.chdir(os.path.dirname(os.path.dirname(cwd)))
+    os.chdir(os.path.dirname(cwd))
 
     file_name = "traj_q.npy"
-    fetch_folder_name = f"OUTPUT/your_sample_folder_name"
+    fetch_folder_name = f"OUTPUT/Thesis_Fig_10_close_wall_ret_test_close"
 
     dest_folder = f"OUTPUT/trajectories/angle_distance_plot_left_edge"
     if not os.path.exists(dest_folder):
         os.makedirs(dest_folder)
 
-    current_vs_distance_plot(fetch_folder_name, file_name, dest_folder)
+    current_vs_distance_plot(fetch_folder_name, dest_folder, fetch_file=file_name)
 
     # # ---------------------------------------------------------------stitch together data from 2 different simulations with threashold -------------------------------------------------------------------
 

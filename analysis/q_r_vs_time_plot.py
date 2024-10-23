@@ -9,31 +9,6 @@ from PIL import Image
 import matplotlib
 import matplotlib.pyplot as plt
 
-# import matplotlib.ticker as tck
-
-
-def linear_fit(x, y):
-    """
-    Fit x and y data with a linear model and return the slope, intercept, and fitted data.
-
-    Parameters:
-    x (array-like): The x-coordinates of the data.
-    y (array-like): The y-coordinates of the data.
-
-    Returns:
-    tuple: slope (a), intercept (b), fitted data (y_fit)
-    """
-    x = np.array(x)[:]  # Ensure x is a numpy array
-    y = np.array(y)[:]  # Ensure y is a numpy array too, for consistency
-
-    # Perform linear fit
-    a, b = np.polyfit(x, y, 1)
-
-    # Generate the fitted data
-    y_fit = a * x + b
-
-    return a, b, y_fit
-
 
 def create_q_r_vs_time_plot(fetch_dir, dest_dir, dest_file="q_r_vs_time.png"):
     matplotlib.use("Agg")
@@ -57,9 +32,6 @@ def create_q_r_vs_time_plot(fetch_dir, dest_dir, dest_file="q_r_vs_time.png"):
 
     traj_q = np.load(traj_q_file[0])
 
-    # print(traj_q.dtype.names)
-    # print(traj_q["topological_charge"])
-
     # fetch the spinfield from the fetch folder
     racetrack_name = "racetrack.png"
     racetrack_pattern = os.path.join(fetch_dir, "**", racetrack_name)
@@ -76,137 +48,6 @@ def create_q_r_vs_time_plot(fetch_dir, dest_dir, dest_file="q_r_vs_time.png"):
         np.array(np.array(Image.open(racetrack_files[0]), dtype=bool)[:, :, 0]).T[:, ::-1]
     )  # [:,:,0] for rgb to grayscale, .T for swapping x and y axis, [::-1] for flipping y axis
 
-    # get the x and y dim
-    # field_size_x = racetrack.shape[0]
-    # field_size_y = racetrack.shape[1]
-
-    # ---------------------------------------------------------------Trajectory plot-------------------------------------------------------------------
-
-    # # Extract data fields
-    # x = traj_q["x0"]
-    # y = traj_q["y0"]
-
-    # # make an equal spacing of 5 points between 0 and len(traj_q["time"])
-    # indices_pictures = np.linspace(0, len(traj_q["time"]) - 1, 5, dtype=int)
-
-    # # set the locations of the images
-    # x_pictures = traj_q["x0"][indices_pictures]
-    # y_pictures = traj_q["y0"][indices_pictures]
-
-    # # make list for images --> list of np arrays
-    # image = []
-
-    # # fetch the images
-    # for index in indices_pictures:
-    #     image_path_pattern = os.path.join(
-    #         fetch_dir, "**", f"spinfield_t_{traj_q[index]['time']:011.6f}.png"
-    #     )
-
-    #     # get the path
-    #     image_path = glob.glob(image_path_pattern, recursive=True)
-
-    #     # load the image
-    #     img = np.array(Image.open(image_path[0]))
-
-    #     image.append(img)
-
-    # # Define the range for cropping around the skyrmion
-    # crop_ranges = (traj_q["r1"][indices_pictures] * 1.3 + 5).astype(np.int32)
-
-    # # crop the images around the skyrmion positions
-    # skyrs = []
-
-    # x_converted = (field_size_y - y_pictures).astype(np.int32)
-    # y_converted = (x_pictures).astype(np.int32)
-
-    # for i in range(len(image)):
-    #     skyrs.append(
-    #         image[i][
-    #             x_converted[i] - crop_ranges[i] : x_converted[i] + crop_ranges[i],
-    #             y_converted[i] - crop_ranges[i] : y_converted[i] + crop_ranges[i],
-    #         ]
-    #     )
-
-    # plt.figure()
-
-    # plt.style.use("dark_background")
-
-    # for i in range(len(skyrs)):
-    #     plt.imshow(
-    #         skyrs[i],
-    #         extent=[
-    #             x_pictures[i] - crop_ranges[i],
-    #             x_pictures[i] + crop_ranges[i],
-    #             y_pictures[i] - crop_ranges[i],
-    #             y_pictures[i] + crop_ranges[i],
-    #         ],
-    #         aspect="auto",
-    #     )
-
-    
-    # plt.rcParams['text.usetex'] = True
-    # plt.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}\usepackage{bm}'
-    # plt.rcParams['font.family'] = 'serif'
-
-
-    # plt.plot(x, y, "ro", label="Trajectory")
-
-    # # for linear fit
-    # a, b, fit = linear_fit(x, y)
-    # plt.plot(
-    #     x,
-    #     fit,
-    #     "g-",
-    #     label=f"Linear Fit,\na = {float(a):.5g},\nb = {float(b):.5g}",
-    # )
-    # print(f"a: {a}")
-
-    # font_title = {"family": "CMU Serif", "color": "white", "size": 25}
-
-    # plt.title("Graph of Trajectory (center of skyr)", fontdict=font_title)
-    # plt.legend(loc="upper left")
-    # plt.xlabel("x [0.3 nm]")
-    # plt.ylabel("y [0.3 nm]")
-
-    # # calculate plt.ylim and plt.xlim based on max and min of x and y, but make graph rectangular, so same range for x and y
-    # x_min = np.min(x)
-    # x_max = np.max(x)
-    # y_min = np.min(y)
-    # y_max = np.max(y)
-
-    # x_range = x_max - x_min
-    # y_range = y_max - y_min
-
-    # if x_range > y_range:
-    #     new_y_min = y_min - 0.5 * (x_range - y_range)
-    #     new_y_max = y_max + 0.5 * (x_range - y_range)
-    #     if new_y_min < 0:
-    #         new_y_max += abs(new_y_min)
-    #         new_y_min = 0
-    #     if new_y_max > field_size_y:
-    #         new_y_min -= new_y_max - field_size_y
-    #         new_y_max = field_size_y
-    #     plt.ylim([new_y_min - 10, new_y_max + 10])
-    #     plt.xlim([x_min, x_max])
-    # else:
-    #     plt.ylim([y_min - 10, y_max + 10])
-    #     new_x_min = x_min - 0.5 * (y_range - x_range)
-    #     new_x_max = x_max + 0.5 * (y_range - x_range)
-    #     if new_x_min < 0:
-    #         new_x_max += abs(new_x_min)
-    #         new_x_min = 0
-    #     if new_x_max > field_size_x:
-    #         new_x_min -= new_x_max - field_size_x
-    #         new_x_max = field_size_x
-    #     plt.xlim([new_x_min, new_x_max])
-
-    # # plt.xlim([240, 580])
-    # # plt.ylim([60, 400])
-    # # plt.gca().yaxis.set_major_formatter(tck.FuncFormatter(format_func))
-    # plt.tight_layout()
-    # # Save the plot
-    # plt.savefig(f"{dest_dir}/{dest_file}", dpi=800)
-    # plt.close()
 
     # ---------------------------------------------------------------Trajectory, q, r triple plot-------------------------------------------------------------------
 

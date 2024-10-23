@@ -1,42 +1,34 @@
 import numpy as np
-
 import time
-
 from tqdm import tqdm
-
 from PIL import Image
-
-# import matplotlib
-# matplotlib.use("Qt5Agg")
-
-import matplotlib.pyplot as plt
 import matplotlib
-
-from scipy.optimize import curve_fit
-
+import matplotlib.pyplot as plt
 import os
-
 import glob
-
 from sklearn import svm
-
 import logging  # enabling display of logging.info messages
+
+if __name__ == "__main__":
+    from common_functions import setup_plt_with_tex
+elif __name__ == "analysis.angle_distance_plot":
+    from analysis.common_functions import setup_plt_with_tex
+else:
+    from PyMMF.analysis.common_functions import setup_plt_with_tex
 
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
-
-
+matplotlib.use("Agg")
 
 v_s_factor = 10
-
-
 a = 0.27
 
 
 phase_diag_temp_dir = "OUTPUT/phase_diag_temp"
+
+
 if not os.path.exists(phase_diag_temp_dir):
     os.makedirs(phase_diag_temp_dir)
-
 
 
 def fetch_traj_q_file(fetch_file, neg_index=1):
@@ -89,52 +81,26 @@ def fetch_racetrack(fetch_dir, racetrack_name="racetrack.png"):
     return racetrack
 
 
-def filter_points(points, x_range, y_range):
-    if x_range[0] is not None:
-        points = points[points[:, 0] > x_range[0]]
-    if x_range[1] is not None:
-        points = points[points[:, 0] < x_range[1]]
-    if y_range[0] is not None:
-        points = points[points[:, 1] > y_range[0]]
-    if y_range[1] is not None:
-        points = points[points[:, 1] < y_range[1]]
-    return points
-
-
-def label_wrap_and_filter(datapoints, regions, lims=np.array([[None, None], [None, None]])):
+def label_wrap_and_filter(datapoints, regions):
+    logging.info(f"regions: {regions}")
+    logging.info(f"datapoints: {datapoints}")
     regionpoints = []
-    for region_index, region in enumerate(regions):
+    for _ , region in enumerate(regions):
         v_s_data = np.array([])
         angle_data = np.array([])
         for r in region:
+            logging.info(f"r: {r}")
             # concatenate the data points for velocity and angle
-            v_s_data = np.concatenate((v_s_data, datapoints[r + "_v_s"]), axis=0)
-            angle_data = np.concatenate((angle_data, datapoints[r + "_angle"]), axis=0)
+            v_s_data = np.concatenate((v_s_data, datapoints[str(r) + "_v_s"]), axis=0)
+            angle_data = np.concatenate((angle_data, datapoints[str(r) + "_angle"]), axis=0)
         regionpoints.append(np.column_stack((v_s_data, angle_data)))
     labels = [1] * len(regionpoints[0]) + [-1] * len(regionpoints[1])
     data = np.vstack((regionpoints[0], regionpoints[1]))
     return data, labels, regionpoints
 
 
-def setup_plt():
-
-    plt.rcParams['text.usetex'] = True
-    plt.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}\usepackage{bm}'
-    plt.rcParams['font.family'] = 'serif'
-
 def create_plot_with_boundaries(datapoints, isatomicstep, dest_boundary_dir, plotlims):
-    """
-    entries in datapoints:
-    - end_reach_v_s
-    - end_reach_angle
-    - repelled_back_v_s
-    - repelled_back_angle
-    - stays_wall_v_s
-    - stays_wall_angle
-    - destr_wall_v_s
-    - destr_wall_angle
-    """
-    setup_plt()
+    setup_plt_with_tex()
     plt.figure()
     if isatomicstep:
         # 4 regions -->         top left,       middle left,    top and middle right,   entire bottom
@@ -231,28 +197,6 @@ def create_plot_with_boundaries(datapoints, isatomicstep, dest_boundary_dir, plo
         alpha = 0
         boundary = ax.contour(XX, YY, Z, levels=[0], colors='k', alpha=alpha, linestyles='-', linewidths=2)
         boundary_points = boundary.collections[0].get_paths()[0].vertices
-        """
-        # logging.info(f"boundary_points: {boundary_points}")
-        # coeffs = np.polyfit(boundary_points[:, 0], boundary_points[:, 1], 2)
-        # logging.info(f"coeffs: {coeffs}")
-
-        # # gather data points from the coeffs
-        # x_poly = np.linspace(xlim[0], xlim[1], 100)
-        # y_poly = coeffs[0] * x_poly**2 + coeffs[1] * x_poly + coeffs[2]
-
-        # # fit a 4th degree polynomial, x^4 having a negative coefficient
-        # coeffs = np.polyfit(boundary_points[:, 0], boundary_points[:, 1], 4)
-        # logging.info(f"coeffs: {coeffs}")
-
-        # # gather data points from the coeffs
-        # x_poly = np.linspace(xlim[0], xlim[1], 100)
-        # y_poly = coeffs[0] * x_poly**4 + coeffs[1] * x_poly**3 + coeffs[2] * x_poly**2 + coeffs[3] * x_poly + coeffs[4]
-
-        # # plot the polynomial
-        # plt.plot(x_poly, y_poly, color="k", label="Decision boundary x^4 fit")
-        """        
-        # plt.plot(boundary_points[:, 0], boundary_points[:, 1], "-", color="k", label="Decision boundary points")
-
         boundaries.append(boundary_points)
 
 
@@ -270,9 +214,6 @@ def create_plot_with_boundaries(datapoints, isatomicstep, dest_boundary_dir, plo
         plt.fill_between(xlim, ylim[0], ylim[1], color=colors[3], alpha=alpha)
         plt.fill_between(boundaries[1][:, 0], boundaries[1][:, 1], ylim[1], color=colors[2], alpha=alpha)
         plt.fill_between(boundaries[0][:, 0], boundaries[0][:, 1], ylim[1], color=colors[0], alpha=alpha)
-    # for idx, boundary_points in enumerate(boundaries):
-    #     color = colors[idx % len(colors)]  # Cycle through colors
-    #     plt.plot(boundary_points[:, 0], boundary_points[:, 1], "-", color=color, label=f"Boundary {idx+1}")
 
     plt.plot(datapoints["end_reach_v_s"], datapoints["end_reach_angle"], "o", linewidth=4, markersize=4, label="survives, passes", color=(0, 0.4, 0))  # dark green
     plt.plot(datapoints["repelled_back_v_s"], datapoints["repelled_back_angle"], "o", linewidth=4, markersize=4, label="survives, bounces back", color="blue")   # blue
@@ -289,6 +230,7 @@ def create_plot_with_boundaries(datapoints, isatomicstep, dest_boundary_dir, plo
     plt.ylabel(r"Current angle $\varphi_{\mathrm{s}}$ [deg]", fontsize=14)
     ax.tick_params(axis='both', which='major', labelsize=14)
     plt.savefig(dest_boundary_dir, dpi=800, transparent=True)
+    logging.info(f"current strength vs current angle Plot saved to {dest_boundary_dir}")
     # plt.show()
     plt.close()
 
@@ -309,11 +251,7 @@ def create_plot_with_boundaries(datapoints, isatomicstep, dest_boundary_dir, plo
 
 def create_phase_diagram_v_s_factor_vs_v_s_angle(fetch_dir, dest_dir, dest_file, fetch_file="traj_q.npy"):
 
-    setup_plt()
-
-
-
-    # traj_q_pattern = os.path.join(fetch_dir, "**", fetch_file)
+    setup_plt_with_tex()
 
     # for wall angled, v_s_x = const, v_s_y = 0
     x_threashold_back = 450
@@ -331,24 +269,25 @@ def create_phase_diagram_v_s_factor_vs_v_s_angle(fetch_dir, dest_dir, dest_file,
 
     total_files = len(traj_q_dirs)
 
-    # min_v_s_fac = None
-    # min_v_s_angle = None
-    # max_v_s_fac = None
-    # max_v_s_angle = None
+    # init values for the different regions
+    temp_dir_found = True
+    stays_back_v_s = np.array([])
+    stays_back_angle = np.array([])
+    stays_wall_v_s = np.array([])
+    stays_wall_angle = np.array([])
+    stays_start_v_s = np.array([])
+    stays_start_angle = np.array([])
+    stays_slow_v_s = np.array([])
+    stays_slow_angle = np.array([])
 
-    
-    # # check if file in temp exists with the same mask and calc_steps as metadata
-    # for i in range(100):
-    #     temp_dir = f"{neumann_temp_dir}/temp_{field_size_x}x{field_size_y}_{i}.npz"
-    #     if os.path.exists(temp_dir):
-    #         with np.load(temp_dir) as data:
-    #             if np.array_equal(data["mask"], mask) and np.array_equal(data["steps"], steps):
-    #                 logging.warning(f"temp file found with the same calculation steps as metadata aswell")
-    #                 return data["phi"], data["j"]
-    #     if i == 99:
-    #         logging.warning(f"no temp file found with same mask and calculation steps as metadata, calculating new data")
+    destr_back_v_s = np.array([])
+    destr_back_angle = np.array([])
+    destr_wall_v_s = np.array([])
+    destr_wall_angle = np.array([])
+    destr_start_v_s = np.array([])
+    destr_start_angle = np.array([])
 
-    # check if file in temp exists with the same mask and calc_steps as metadata
+    # check if temp file with same mask and calculation steps exists
     for i in range(100):
         temp_dir = f"{phase_diag_temp_dir}/temp_phase_dir_{i}.npz"
         if os.path.exists(temp_dir):
@@ -369,25 +308,9 @@ def create_phase_diagram_v_s_factor_vs_v_s_angle(fetch_dir, dest_dir, dest_file,
                     destr_wall_angle = data["destr_wall_angle"]
                     destr_start_v_s = data["destr_start_v_s"]
                     destr_start_angle = data["destr_start_angle"]
-                    temp_dir_found = True
                     break
         if i == 99:
             logging.info(f"no temp file found with same mask and calculation steps as metadata, now searching through traj_qs\n")
-            stays_back_v_s = np.array([])
-            stays_back_angle = np.array([])
-            stays_wall_v_s = np.array([])
-            stays_wall_angle = np.array([])
-            stays_start_v_s = np.array([])
-            stays_start_angle = np.array([])
-            stays_slow_v_s = np.array([])
-            stays_slow_angle = np.array([])
-
-            destr_back_v_s = np.array([])
-            destr_back_angle = np.array([])
-            destr_wall_v_s = np.array([])
-            destr_wall_angle = np.array([])
-            destr_start_v_s = np.array([])
-            destr_start_angle = np.array([])
             temp_dir_found = False
                 
     # to acquire the stays_wall etc from the fetch_folders
@@ -448,20 +371,11 @@ def create_phase_diagram_v_s_factor_vs_v_s_angle(fetch_dir, dest_dir, dest_file,
         v_s_fac = v_s_fac_and_wall_angle[0] * -1 * v_s_factor * a
         wall_angle = v_s_fac_and_wall_angle[1] * -1
 
-        try:
-            q_init = q[0]
-        except:
-            logging.info(f"traj_q_dir: {traj_q_dir}")
-            continue
         q_sum_last = q[-1]
         q_last = q_sum_last
         t_last = t[-1]
         x_last = x[-1]
-        y_last = y[-1]
-        x_7_back = x[-7]
-        y_7_back = y[-7]
         x_before_last = x[-2]
-        x_8_back =x[-8]
         end_times = (10, 30, 50)
         
         if len(q) < 7:
@@ -471,25 +385,14 @@ def create_phase_diagram_v_s_factor_vs_v_s_angle(fetch_dir, dest_dir, dest_file,
             destr_wall_angle = np.append(destr_wall_angle, wall_angle)
             continue
 
-        if False:
-            logging.info(f"v_s_fac: {v_s_fac}")
-            logging.info(f"wall_angle: {wall_angle}")
-            logging.info(f"SAMPLE {traj_q_idx}")
-            logging.info(f"t_last: {t_last}")
-            logging.info(f"x_last: {x_last}")
-            logging.info(f"q_last: {q_last}")
-
         q_variance = 0.2
 
-        # TODO: CHECK WHY NECESSARY
         # Skyrmion is moving until end
         if t_last not in end_times:
             indices = np.where((q >= -1 - q_variance) & (q <= -1 + q_variance))[0]
-            last_index = indices[-1] if len(indices) > 0 else None
+            last_index = indices[-1] if len(indices) > 0 else 1
             x_last = x[last_index]
             x_before_last = x[last_index - 1]
-        # if t_last == 20:
-        #     print(file)
 
         movement_threshold = 0.0001
         slow_movement_threshold = 0.1
@@ -499,9 +402,6 @@ def create_phase_diagram_v_s_factor_vs_v_s_angle(fetch_dir, dest_dir, dest_file,
         positive_velocity = (x_last - x_before_last > movement_threshold)
 
         slow_velocity = (abs(x_last - x_before_last) < slow_movement_threshold)
-        # bool representing if the skyrmion is moving to the right
-
-        # if v_s_fac < 5:
 
         survives = q_ideal + q_variance > q_last > q_ideal - q_variance
 
@@ -509,105 +409,45 @@ def create_phase_diagram_v_s_factor_vs_v_s_angle(fetch_dir, dest_dir, dest_file,
             if x_last < x_threashold_back:
                 destr_back_v_s = np.append(destr_back_v_s, v_s_fac)
                 destr_back_angle = np.append(destr_back_angle, wall_angle)
-                # if v_s_fac > 50 and wall_angle > 8:
-                #     logging.info(f"v_s_fac, wall_angle, x_last: {v_s_fac}, {wall_angle}, {x_last}")
-                if False:
-                    logging.info("destroyed after passing")
             elif x_last < x_threashold_mid:
                 destr_wall_v_s = np.append(destr_wall_v_s, v_s_fac)
                 destr_wall_angle = np.append(destr_wall_angle, wall_angle)
-                # if v_s_fac > 58:
-                #     logging.info(f"v_s_fac, wall_angle: {v_s_fac}, {wall_angle}")
-                #     logging.info(f"x_last: {x_last}")
-                if False:
-                    logging.info("destroyed on wall")
             else:
                 destr_start_v_s = np.append(destr_start_v_s, v_s_fac)
                 destr_start_angle = np.append(destr_start_angle, wall_angle)
-                if False:
-                    logging.info("destroyed at start")
+
         # if it survives
         else:
             # if it passes the wall and survives
             if x_last < x_threashold_back:
                 stays_back_v_s = np.append(stays_back_v_s, v_s_fac)
                 stays_back_angle = np.append(stays_back_angle, wall_angle)
-                if False:
-                    logging.info("survives, passes")
             elif x_last > x_threashold_mid:
                 stays_start_v_s = np.append(stays_start_v_s, v_s_fac)
                 stays_start_angle = np.append(stays_start_angle, wall_angle)
-                if False:
-                    logging.info("survives, bounces back")
             else:
                 if slow_velocity and pass_location_low < x_last < pass_location_high:
-                    # logging.info(f"x_last, v_s_fac, v_s_angle: {x_last}, {v_s_fac}, {wall_angle}")
                     stays_wall_v_s = np.append(stays_wall_v_s, v_s_fac)
                     stays_wall_angle = np.append(stays_wall_angle, wall_angle)
                 elif negative_velocity:
-                    # logging.info(f"x_last, pass_location: {x_last}, {pass_location}")
-                    # if x_last < pass_location:
                     if "atomic_step" in traj_q_dir:
                         stays_wall_v_s = np.append(stays_wall_v_s, v_s_fac)
                         stays_wall_angle = np.append(stays_wall_angle, wall_angle)
                     else:
                         stays_slow_v_s = np.append(stays_slow_v_s, v_s_fac)
                         stays_slow_angle = np.append(stays_slow_angle, wall_angle)
-                    # else:
-                        # stays_wall_v_s = np.append(stays_wall_v_s, v_s_fac)
-                        # stays_wall_angle = np.append(stays_wall_angle, wall_angle)
-                    if False:
-                        logging.info("survives, passes; t > 10ns")
                 elif positive_velocity:
                     stays_start_v_s = np.append(stays_start_v_s, v_s_fac)
                     stays_start_angle = np.append(stays_start_angle, wall_angle)
-                    if False:
-                        logging.info("survives, bounces back")
                 elif t_last not in end_times:
                     # print(t_last)
                     stays_wall_v_s = np.append(stays_wall_v_s, v_s_fac)
                     stays_wall_angle = np.append(stays_wall_angle, wall_angle)
-                    if False:
-                        logging.info("survives, gets stuck")
                 else:
                     logging.info(f"t_last, x_last, v_s_fac, v_s_angle: {t_last}, {x_last}, {v_s_fac}, {wall_angle}")
 
-                
-            # else:
-            #     stays_start_v_s = np.append(stays_start_v_s, v_s_fac)
-            #     stays_start_angle = np.append(stays_start_angle, wall_angle)
-                if False:
-                    logging.info("survives, bounces back")
-            # elif x_last < x_threashold_mid:
-            #     if negative_velocity:
-            #         # logging.info(f"x_last, pass_location: {x_last}, {pass_location}")
-            #         if x_last < pass_location:
-            #             stays_slow_v_s = np.append(stays_slow_v_s, v_s_fac)
-            #             stays_slow_angle = np.append(stays_slow_angle, wall_angle)
-            #         else:
-            #             stays_wall_v_s = np.append(stays_wall_v_s, v_s_fac)
-            #             stays_wall_angle = np.append(stays_wall_angle, wall_angle)
-            #         if False:
-            #             logging.info("survives, passes; t > 10ns")
-            #     elif positive_velocity:
-            #         stays_start_v_s = np.append(stays_start_v_s, v_s_fac)
-            #         stays_start_angle = np.append(stays_start_angle, wall_angle)
-            #         if False:
-            #             logging.info("survives, bounces back")
-            #     elif t_last not in end_times:
-            #         # print(t_last)
-            #         stays_wall_v_s = np.append(stays_wall_v_s, v_s_fac)
-            #         stays_wall_angle = np.append(stays_wall_angle, wall_angle)
-            #         if False:
-            #             logging.info("survives, gets stuck")
-            # else:
-            #     stays_start_v_s = np.append(stays_start_v_s, v_s_fac)
-            #     stays_start_angle = np.append(stays_start_angle, wall_angle)
-            #     if False:
-            #         logging.info("survives, bounces back")
-
-    
     if not temp_dir_found:
+        temp_dir = ""
         for i in range(100):
             pot_temp_dir = f"{phase_diag_temp_dir}/temp_phase_dir_{i}.npz"
             if not os.path.exists(pot_temp_dir):
@@ -678,7 +518,7 @@ def create_phase_diagram_v_s_factor_vs_v_s_angle(fetch_dir, dest_dir, dest_file,
     # ---------------------------------------------------------------Plotting datapoints with seperation between survives and destroyed-------------------------------------------------------------------
 
     plt.figure()
-    # # =========================================normal plot separation=========================================
+    # # ========================================= plot separation with 7 areas=========================================
     # plt.plot(stays_back_v_s, stays_back_angle, "o", linewidth=4, markersize=4, label="survives, passes", color=(0, 0.9, 0))  # light green 
     # plt.plot(stays_slow_v_s, stays_slow_angle, "o", linewidth=4, markersize=4, label="survives, passes; t > 10ns", color=(0, 0.4, 0))   # dark green
     # plt.plot(stays_wall_v_s, stays_wall_angle, "o", linewidth=4, markersize=4, label="survives, gets stuck", color=(1.0, 0.5, 0.0)) # orange
@@ -687,7 +527,7 @@ def create_phase_diagram_v_s_factor_vs_v_s_angle(fetch_dir, dest_dir, dest_file,
     # plt.plot(destr_wall_v_s, destr_wall_angle, "^", linewidth=4, markersize=4, label="destroyed on wall", color=(1.0, 0.5, 0.0))    # orange
     # plt.plot(destr_start_v_s, destr_start_angle, "r^", linewidth=4, markersize=4, label="destroyed at start")   # red
 
-    #========================================= connecting different areas=========================================
+    #========================================= connecting different areas to 4 total areas like in thesis=========================================
 
     plt.plot(end_reach_v_s, end_reach_angle, "o", linewidth=4, markersize=4, label="survives, passes", color=(0, 0.9, 0))  # light green
     plt.plot(repelled_back_v_s, repelled_back_angle, "ro", linewidth=4, markersize=4, label="survives, bounces back")   # red
@@ -695,23 +535,25 @@ def create_phase_diagram_v_s_factor_vs_v_s_angle(fetch_dir, dest_dir, dest_file,
     plt.plot(destr_wall_v_s, destr_wall_angle, "^", linewidth=4, markersize=4, label="destroyed on wall", color=(1.0, 0.5, 0.0))    # orange
     # ============================================================================================================
 
-    # plt.legend(loc="upper left", fontsize="small")
-    # plt.title("angled_current on straight wall")
     plt.xlabel(r"$|\vec{\bm{v}}_{\mathrm{s}}|$ [nm/ns]")
     plt.ylabel(r"$\varphi_{\mathrm{s}}$ [deg]")
     plt.tight_layout()
-    # plt.savefig("1.5T_alex_phase_diagram.png", dpi=300)
     out_path = os.path.join(dest_dir, dest_file)
     plt.savefig(out_path, dpi=800, transparent=True)
-    # plt.show()
+    
+    logging.info(f"current strength vs current angle Plot saved to {out_path}")
 
 
 def main():
-    dest_dir = "OUTPUT"
+    # change cwd two up, then to ongoing_work -> for results from existing data
+    orig_cwd = os.getcwd()
+    os.chdir("../../ongoing_work")
+    logging.info(f"cwd: {os.getcwd()}")
+
+    dest_dir = f"{orig_cwd}/../OUTPUT"
 
     # =========================================new one 2 no step=========================================
-    dest_file = "phasediagram_exact_edge_2_try.png"
-    # fetch_dir = "OUTPUT/ROMMING_same_beta_atomistic_angled_vs_comparison_open_heun_1.5_-20.0_-9.0"
+    dest_file = "phasediagram_exact_edge_2.png"
     fetch_dir = "OUTPUT/ROMMING_same_beta_2_high_angles_atomistic_angled_vs_comparison_open_heun_1.5_-20.5_-9.0"
     fetch_dir_2 = "OUTPUT/ROMMING_same_beta_2_low_angles_atomistic_angled_vs_comparison_open_heun_1.5_-20.5_-5.875"
     fetch_dir_3 = "OUTPUT/ROMMING_same_beta_high_v_s_atomistic_angled_vs_comparison_open_heun_1.5_-21.5_-3.0"

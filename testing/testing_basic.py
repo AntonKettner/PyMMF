@@ -39,7 +39,7 @@ class TestSkyrmionSimulations(ut.TestCase):
         sim_type = "ReLU"
         logging.warning(f"RUNNING TEST: {sim_type}")
         result = subprocess.run(
-            ["python", "skyrmion_simulation/python_scripts/skyrmion_simulation.py", "--sim_type", sim_type], capture_output=True, text=True
+            ["python", "skyrmion_simulation/main.py", "--sim_type", sim_type], capture_output=True, text=True
         )
 
         # save the console output to a file
@@ -70,7 +70,7 @@ class TestSkyrmionSimulations(ut.TestCase):
         sim_type = "skyrmion_creation"
         logging.warning(f"RUNNING TEST: {sim_type}")
         result = subprocess.run(
-            ["python", "skyrmion_simulation/python_scripts/skyrmion_simulation.py", "--sim_type", sim_type], capture_output=True, text=True
+            ["python", "skyrmion_simulation/main.py", "--sim_type", sim_type], capture_output=True, text=True
         )
 
         # save the console output to a file
@@ -102,7 +102,7 @@ class TestSkyrmionSimulations(ut.TestCase):
         sim_type = "wall_ret_test"
         logging.warning(f"RUNNING TEST: {sim_type}")
         result = subprocess.run(
-            ["python", "skyrmion_simulation/python_scripts/skyrmion_simulation.py", "--sim_type", sim_type], capture_output=True, text=True
+            ["python", "skyrmion_simulation/main.py", "--sim_type", sim_type], capture_output=True, text=True
         )
 
         # save the console output to a file
@@ -136,7 +136,7 @@ class TestSkyrmionSimulations(ut.TestCase):
         sim_type = "x_current"
         logging.warning(f"RUNNING TEST: {sim_type}")
         result = subprocess.run(
-            ["python", "skyrmion_simulation/python_scripts/skyrmion_simulation.py", "--sim_type", sim_type], capture_output=True, text=True
+            ["python", "skyrmion_simulation/main.py", "--sim_type", sim_type], capture_output=True, text=True
         )
 
         # save the console output to a file
@@ -161,6 +161,7 @@ class TestSkyrmionSimulations(ut.TestCase):
 
         if not -3 < movement_angle < 3:
             self.fail(f"skyrmion moving into the wrong direction: angle={movement_angle} for {sim_type}")
+
 
 if __name__ == "__main__":
     # logging config

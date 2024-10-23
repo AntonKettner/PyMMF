@@ -9,20 +9,17 @@ import glob
 import matplotlib
 import matplotlib.pyplot as plt
 
-
-def setup_plt():
-
-    matplotlib.use("Agg")
-    # add the path manually if necessary
-    font_path = "//afs/physnet.uni-hamburg.de/users/AU/akettner/.conda/envs/2_pycuda/fonts/cmunrm.ttf"
-    matplotlib.font_manager.fontManager.addfont(font_path)
-
-    plt.rcParams["font.family"] = "CMU Serif"
-    plt.rcParams["font.serif"] = "CMU Serif Roman"
-    plt.rcParams["mathtext.fontset"] = "cm"
+# local imports
+if __name__ == "__main__":
+    from common_functions import setup_plt
+elif __name__ == "analysis.input_output":
+    from analysis.common_functions import setup_plt
+else:
+    from PyMMF.analysis.common_functions import setup_plt
 
 
 def create_input_output_plot(fetchpath, destpath, dest_file):
+    matplotlib.use("Agg")   
 
     setup_plt()
 

@@ -9,30 +9,10 @@ from PIL import Image
 import matplotlib
 import matplotlib.pyplot as plt
 
-# import matplotlib.ticker as tck
-
-
-def linear_fit(x, y):
-    """
-    Fit x and y data with a linear model and return the slope, intercept, and fitted data.
-
-    Parameters:
-    x (array-like): The x-coordinates of the data.
-    y (array-like): The y-coordinates of the data.
-
-    Returns:
-    tuple: slope (a), intercept (b), fitted data (y_fit)
-    """
-    x = np.array(x)[:]  # Ensure x is a numpy array
-    y = np.array(y)[:]  # Ensure y is a numpy array too, for consistency
-
-    # Perform linear fit
-    a, b = np.polyfit(x, y, 1)
-
-    # Generate the fitted data
-    y_fit = a * x + b
-
-    return a, b, y_fit
+if __name__ == "__main__":
+    from common_functions import linear_fit
+elif __name__ == "analysis.trajectory_trace_new_wall_retention":
+    from analysis.common_functions import linear_fit
 
 
 def make_wall_retention_plot(fetch_dir, dest_dir, dest_file="wall_retention_fit.png"):
@@ -49,7 +29,7 @@ def make_wall_retention_plot(fetch_dir, dest_dir, dest_file="wall_retention_fit.
     if amount_of_traj_q_files != 1:
         logging.error("There should be exactly one traj_q.npy file.")
         if amount_of_traj_q_files == 0:
-            logging.error("No traj_q.npy file was found.")
+            logging.error(f"No traj_q.npy file was found at {pattern_file}.")
         elif amount_of_traj_q_files > 1:
             logging.error(f"{amount_of_traj_q_files} traj_q.npy files were found.")
         exit()
@@ -217,6 +197,7 @@ def make_wall_retention_plot(fetch_dir, dest_dir, dest_file="wall_retention_fit.
 
 
 def main():
+    matplotlib.use("Agg")
     # set these vars
     boundary = "open"  # "ferro", "open"
     vs = 0  # 15, 8
@@ -228,9 +209,12 @@ def main():
     # vs = 8  # 15, 8
     # B_ext = 1.5  # 1.5, 1.15
 
-    fetch_folder_name = f"OUTPUT/results_wall_retention_new_open_heun_1.5_25"
+    orig_cwd = os.getcwd()
+    os.chdir("../../ongoing_work")
+    logging.info(f"Current working directory: {os.getcwd()}")
+    fetch_folder_name = "OUTPUT/results_wall_retention_new_open_heun_1.5_25_83.8/sample_1_83.8_deg_25_v_s_fac"
 
-    dest_folder = f"OUTPUT/trajectories"
+    dest_folder = f"../PyMMF/OUTPUT/trajectories"
 
     make_wall_retention_plot(fetch_folder_name, dest_folder)
 

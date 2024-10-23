@@ -37,40 +37,6 @@ def fetch_traj_q_file(fetch_file):
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 
-# def skyrmion_profile(r, R, Delta):
-#     """
-#     The tanh-like function describing the radial profile of a skyrmion.
-#     """
-#     return np.tanh((r - R) / Delta)
-
-
-# def fit_skyrmion_radius(mz, center):
-#     """
-#     Fit the mz component of the magnetization to determine the skyrmion radius using scipy's curve_fit.
-
-#     Parameters:
-#     mz (2D numpy array): The mz component of the magnetization.
-#     center (tuple): The coordinates of the center of the skyrmion (y, x).
-
-#     Returns:
-#     float: The radius R of the skyrmion.
-#     """
-#     y, x = np.indices(mz.shape)
-#     r = np.sqrt((x - center[1]) ** 2 + (y - center[0]) ** 2)
-
-#     # Bin m_z values by radial distance to get average m_z for each r
-#     bins = np.linspace(0, np.max(r), 400)
-#     bin_indices = np.digitize(r, bins)
-#     binned_mz = [np.mean(mz[bin_indices == i]) for i in range(1, len(bins))]
-
-#     # Initial guesses for R and Delta
-#     p0 = [10, 1]
-
-#     # Fit using curve_fit
-#     popt, _ = curve_fit(skyrmion_profile, bins[:-1], binned_mz, p0=p0)
-
-#     return popt[0]  # Return the fitted R value
-
 
 def filter_points(points, x_range, y_range):
     if x_range[0] is not None:
@@ -83,54 +49,6 @@ def filter_points(points, x_range, y_range):
         points = points[points[:, 1] < y_range[1]]
     return points
 
-
-# skyr_path = "needed_files/Neel_Skyr_2_big.npy"
-
-# skyr = np.transpose(np.load(skyr_path), (1, 0, 2))
-
-# # swap x and y axis
-# skyr[:, :, 0], skyr[:, :, 1] = (
-#     skyr[:, :, 1],
-#     skyr[:, :, 0].copy(),
-# )
-
-# # skyr = np.load(skyr_path)
-
-# min_idx_skyr = np.unravel_index(np.argmin(skyr[:, :, 2]), skyr.shape[:2])
-
-# print(min_idx_skyr)
-
-# R = fit_skyrmion_radius(skyr[:, :, 2], min_idx_skyr)
-
-# print(R)
-
-# # save skyr normally
-# skyr[min_idx_skyr[0], min_idx_skyr[1], 2] = 1
-# plt.imsave("skyrrrr.png", skyr[:, :, 2], cmap="seismic")
-
-
-# # collect vert and horiz data
-# vert = skyr[min_idx_skyr[0], :, 2]
-# horiz = skyr[:, min_idx_skyr[1], 2]
-
-
-# # random array shape (100, 400, 3)
-# array = np.random.rand(4, 5, 3)
-# min_idx = np.unravel_index(np.argmin(array[:, :, 2]), array.shape[:2])
-
-
-# print(min_idx)
-# print(array[min_idx])
-# print(array)
-
-# save the topological charge and location at the current time
-# output.q_location_tracker[index_t, 0] = t
-# output.q_location_tracker[index_t, 1] = q_sum
-
-# tracker_array = spin.spins_evolved[:, :, 2] - relaxed_init_spins[:, :, 2]
-# tracker_array[tracker_array > 0] = 0
-
-# output.q_location_tracker[index_t, 2:] = spin.find_skyr_center(tracker_array)
 
 # empty array
 stays_back_v_s = np.array([])
@@ -153,49 +71,6 @@ destr_start_angle = np.array([])
 base_dir = "OUTPUT/ROMMING_same_beta_atomistic_angled_vs_comparison_open_heun_1.5_-20.0_-9.0"
 
 traj_q_pattern = os.path.join(base_dir, "**", "traj_q.npy")
-
-# -----------------------------------------------------------------------------------------------------------------------------------------
-# ---------------------------------------------------------------Testing value-------------------------------------------------------------------
-# -----------------------------------------------------------------------------------------------------------------------------------------
-
-# file_current = "OUTPUT/results_current/sample_1_1.5_deg_5.0_v_s_fac/traj_q.npy"
-# file = "OUTPUT/results_3.5_9.5_deg_22_40_vs/sample_13/traj_q.npy"
-# file_2 = "OUTPUT/results_3_5_deg_22_40_vs/sample_53/traj_q.npy"
-
-# traj_q = np.load(file_current)
-# filtered_traj_q = traj_q[~np.all(traj_q == 0, axis=1)]
-# q_gradient = np.gradient(filtered_traj_q[:, 1] - filtered_traj_q[0, 1] + 1)
-
-# # lowest index where gradient is below -0.5 --> where the skyrmion is destroyed
-# idx_stop = np.where(q_gradient < -0.3)[0]
-# # print(idx_stop)
-# # if idx_stop.size > 0:
-# #     # print(idx_stop)
-# #     adj_traj_q = filtered_traj_q[: idx_stop[-1], :]
-# # else:
-# #     adj_traj_q = filtered_traj_q
-
-# dirname = os.path.dirname(file_current)
-
-# v_s_fac_and_wall_angle = np.load(os.path.join(dirname, "v_s_fac_and_wall_angle.npy"))
-# v_s_fac = v_s_fac_and_wall_angle[0]
-# wall_angle = v_s_fac_and_wall_angle[1]
-
-# q_last = filtered_traj_q[-1, 1]
-# t_last = filtered_traj_q[-1, 0]
-# x_last = filtered_traj_q[-1, 2]
-# y_last = filtered_traj_q[-1, 3]
-# x_6_back = filtered_traj_q[-6, 2]
-
-
-# ---------------------------------------------------------------Prints-------------------------------------------------------------------
-
-# print(v_s_fac, wall_angle)
-# print(q_last, x_last, y_last, x_6_back)
-# # print(traj_q)
-# np.savetxt(os.path.join(base_dir, "traj_q_sample_59_new_new_new.txt"), traj_q)
-# # print(filtered_traj_q)
-
 
 # -----------------------------------------------------------------------------------------------------------------------------------------
 # ---------------------------------------------------------------Loop-------------------------------------------------------------------

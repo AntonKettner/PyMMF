@@ -7,11 +7,13 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 import glob
 from PIL import Image
 import matplotlib
-
 import matplotlib.pyplot as plt
 
-# import matplotlib.ticker as tck
 
+if __name__ == "__main__":
+    from common_functions import setup_plt
+elif __name__ == "analysis.trajectory_trace_simple":
+    from analysis.common_functions import setup_plt
 
 def setup_plt():
     matplotlib.use("Agg")
@@ -19,29 +21,6 @@ def setup_plt():
     plt.rcParams["text.usetex"] = True
     plt.rcParams["text.latex.preamble"] = r"\usepackage{amsmath}\usepackage{bm}"
     plt.rcParams["font.family"] = "serif"
-
-
-def linear_fit(x, y):
-    """
-    Fit x and y data with a linear model and return the slope, intercept, and fitted data.
-
-    Parameters:
-    x (array-like): The x-coordinates of the data.
-    y (array-like): The y-coordinates of the data.
-
-    Returns:
-    tuple: slope (a), intercept (b), fitted data (y_fit)
-    """
-    x = np.array(x)[:]  # Ensure x is a numpy array
-    y = np.array(y)[:]  # Ensure y is a numpy array too, for consistency
-
-    # Perform linear fit
-    a, b = np.polyfit(x, y, 1)
-
-    # Generate the fitted data
-    y_fit = a * x + b
-
-    return a, b, y_fit
 
 
 def trajectory_trace(
@@ -206,20 +185,7 @@ def trajectory_trace(
         x_factor = 0.27
         y *= y_factor
         x *= x_factor
-        """
-            # x *= 0.27
-            # y *= 0.27
 
-            # # for linear fit
-            # a, b, fit = linear_fit(x, y)
-            # plt.plot(
-            #     x,
-            #     fit,
-            #     "g-",
-            #     label=f"Linear Fit,\na = {float(a):.5g},\nb = {float(b):.5g}",
-            # )
-            # print(f"a: {a}")
-        """
         # calculate plt.ylim and plt.xlim based on max and min of x and y, but make graph rectangular, so same range for x and y
         x_min_local = np.min(x)
         x_max_local = np.max(x)
