@@ -39,8 +39,13 @@ def trajectory_trace(
     x_max_global = -np.inf
 
     # subfolders in fetch_folder_name
-    fetch_dirs = [f.path for f in os.scandir(fetch_folder_name) if f.is_dir()]
-
+    
+    list_subdirs = [dir for dir in os.listdir(fetch_folder_name) if os.path.isdir(os.path.join(fetch_folder_name, dir))]
+    if len(list_subdirs) == 0:
+        fetch_dirs = [fetch_folder_name]
+    else:
+        fetch_dirs = [f.path for f in os.scandir(fetch_folder_name) if f.is_dir()]
+        
     if isinstance(fetch_dirs, str):
         fetch_dirs = [fetch_dirs]
 
@@ -255,9 +260,9 @@ def main():
     # vs = 8  # 15, 8
     # B_ext = 1.5  # 1.5, 1.15
 
-    fetch_folder_name = f"../../OUTPUT/wall_ret_test_middle_wall_ret_test"
+    fetch_folder_name = f"../OUTPUT/Thesis_Fig_10_close_2_wall_ret_test_close"
 
-    dest_folder = f"../../OUTPUT/trajectories"
+    dest_folder = f"../OUTPUT/trajectories"
 
     native_v_s_factor = 10  # 200 v_s_factor * 0.05 (s. num methods)
 

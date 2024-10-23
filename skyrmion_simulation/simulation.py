@@ -46,7 +46,7 @@ class sim:
     - check_variance (bool)         : Whether to check the variance.
     - check_skyrmion_presence (bool): Whether to check for skyrmion presence.
     - critical_variance (float)     : Critical variance value.
-    - max_error (float)             : Maximum error (wall_ret_test_new)
+    - max_error (float)             : Maximum error (wall_rep_test_new)
     - t_pics (numpy.ndarray)        : The times at which a picture is saved.
     - steps_per_avg (int)           : The number of steps per average calculation.
     - learning_rate (numpy.ndarray) : The learning rate for the simulation.
@@ -133,7 +133,7 @@ class sim:
         - "heun" : Can be used with a max time step of 0.000018.
         """
 
-        # SIMULATION TYPES: "skyrmion_creation" or "wall_retention" or "wall_ret_test_close" or "wall_ret_test_far" or
+        # SIMULATION TYPES: "skyrmion_creation" or "wall_repulsion" or "wall_rep_test_close" or "wall_rep_test_far" or
         #                   "angled_vs_on_edge" or "x_current" or "x_current_SkH_test" or "pinning_tests" or "ReLU" or "ReLU_larger_beta"
         cls.sim_type = sim_type
 
@@ -151,10 +151,10 @@ class sim:
         cls.v_s_positioning = False
         cls.v_s_factor      = 200
 
-        # only needed for wall_ret_test_new
+        # only needed for wall_rep_test_new
         cls.distances = np.array([])
 
-        if cls.sim_type == "wall_retention":
+        if cls.sim_type == "wall_repulsion":
             # Output dir name
             cls.fig = "Thesis_Fig_9"
 
@@ -303,7 +303,7 @@ class sim:
             cls.apply_bottom_angle = False
             cst.B_fields           = np.ones((cls.samples)) * cst.B_ext
 
-        elif cls.sim_type == "wall_ret_test_close":
+        elif cls.sim_type == "wall_rep_test_close":
             # Output dir name
             cls.fig        = "Thesis_Fig_10_close_2"
             cls.t_max      = 200
@@ -341,7 +341,7 @@ class sim:
             cls.cons_reach_threashold = 10
             cls.samples               = cls.bottom_angles.shape[0] * cls.v_s_factors.shape[0]
 
-        elif cls.sim_type == "wall_ret_test_far":
+        elif cls.sim_type == "wall_rep_test_far":
             # Output dir name
             cls.fig        = "Thesis_Fig_10_far"
             cls.t_max      = 800
@@ -448,9 +448,9 @@ class sim:
             cls.v_s_centering      = False
             cls.v_s_to_wall        = False
 
-        elif cls.sim_type == "wall_ret_test":
+        elif cls.sim_type == "wall_rep_test":
             # Output dir name
-            cls.fig        = "wall_ret_test_middle"
+            cls.fig        = "wall_rep_test_middle"
             cls.t_max      = 40
             cls.No_sim_img = 1000
             cst.beta       = cst.alpha

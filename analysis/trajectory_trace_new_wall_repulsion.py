@@ -11,11 +11,11 @@ import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
     from common_functions import linear_fit
-elif __name__ == "analysis.trajectory_trace_new_wall_retention":
+elif __name__ == "analysis.trajectory_trace_new_wall_repulsion":
     from analysis.common_functions import linear_fit
 
 
-def make_wall_retention_plot(fetch_dir, dest_dir, dest_file="wall_retention_fit.png"):
+def make_wall_repulsion_plot(fetch_dir, dest_dir, dest_file="wall_repulsion_fit.png"):
     # fetch the traj_q file from the fetch folder
     filename = "traj_q.npy"
 
@@ -216,7 +216,7 @@ def main():
 
     dest_folder = f"../PyMMF/OUTPUT/trajectories"
 
-    make_wall_retention_plot(fetch_folder_name, dest_folder)
+    make_wall_repulsion_plot(fetch_folder_name, dest_folder)
 
     # ---------------------------------------------------------------Trajectory, q, r triple plot-------------------------------------------------------------------
 

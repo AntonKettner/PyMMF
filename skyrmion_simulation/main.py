@@ -40,7 +40,7 @@ sys.path.insert(0, parent_directory)
 # Local application/class imports
 from current_calculation import current_calculation as cc
 from analysis.input_output import create_input_output_plot
-from analysis.trajectory_trace_new_wall_retention import make_wall_retention_plot
+from analysis.trajectory_trace_new_wall_repulsion import make_wall_repulsion_plot
 from analysis.trajectory_trace_simple import trajectory_trace
 from analysis.q_r_vs_time_plot import create_q_r_vs_time_plot
 from analysis.angle_distance_plot import current_vs_distance_plot
@@ -135,10 +135,10 @@ def arg_parser():
 
     Available simulation types:
         - "skyrmion_creation"
-        - "wall_retention"
-        - "wall_ret_test"
-        - "wall_ret_test_close"
-        - "wall_ret_test_far"
+        - "wall_repulsion"
+        - "wall_rep_test"
+        - "wall_rep_test_close"
+        - "wall_rep_test_far"
         - "angled_vs_on_edge"
         - "x_current"
         - "x_current_SkH_test"
@@ -149,10 +149,10 @@ def arg_parser():
 
     acceptable_sim_types = [
         "skyrmion_creation",
-        "wall_retention",
-        "wall_ret_test",
-        "wall_ret_test_close",
-        "wall_ret_test_far",
+        "wall_repulsion",
+        "wall_rep_test",
+        "wall_rep_test_close",
+        "wall_rep_test_far",
         "angled_vs_on_edge",
         "x_current",
         "x_current_SkH_test",
@@ -256,7 +256,7 @@ def run_simulation(sim_no, angle, v_s_fac):
     if sim.model_type == "atomistic":
         postfix_dict["sub_no"] = np.float32(0)
 
-    if sim.sim_type == "wall_ret_test_close" or sim.sim_type == "wall_ret_test_far":
+    if sim.sim_type == "wall_rep_test_close" or sim.sim_type == "wall_rep_test_far":
         postfix_dict["error"]        = np.empty(2, dtype=np.float32)
         start_v_s_x_y_deletion_index = 0
         error_streak_counter         = 0
@@ -1064,12 +1064,12 @@ def main(sim_type="x_current"):
                 logging.warning("no images deleted eventhough save_pics is False")
 
         try:
-            if sim.sim_type == "wall_retention" or sim.sim_type == "wall_retention_new" or sim.sim_type == "wall_retention_reverse_beta":
+            if sim.sim_type == "wall_repulsion" or sim.sim_type == "wall_repulsion_new" or sim.sim_type == "wall_repulsion_reverse_beta":
                 if sim.final_skyr_No <= 1:
-                    logging.info(f"CREATING WALL RETENTION PLOT FOR SAMPLE {sample+1}")
-                    make_wall_retention_plot(fetch_dir=sample_dir, dest_dir=sample_dir, dest_file=f"plot_wall_retention_{sample + 1}.png")
+                    logging.info(f"CREATING WALL repulsion PLOT FOR SAMPLE {sample+1}")
+                    make_wall_repulsion_plot(fetch_dir=sample_dir, dest_dir=sample_dir, dest_file=f"plot_wall_repulsion_{sample + 1}.png")
 
-            if sim.sim_type == "wall_ret_test_close" or sim.sim_type == "wall_ret_test_far":
+            if sim.sim_type == "wall_rep_test_close" or sim.sim_type == "wall_rep_test_far":
                 logging.info(f"CREATING WALL current vs distance plot {sample+1}")
                 current_vs_distance_plot(fetch_dir=sample_dir, dest_dir=sample_dir, dest_file=f"current_vs_distance_{sample + 1}.png")
 

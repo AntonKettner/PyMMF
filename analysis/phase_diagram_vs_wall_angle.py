@@ -545,12 +545,13 @@ def create_phase_diagram_v_s_factor_vs_v_s_angle(fetch_dir, dest_dir, dest_file,
 
 
 def main():
+    # TEST WITH OLD RESULTS
     # change cwd two up, then to ongoing_work -> for results from existing data
     orig_cwd = os.getcwd()
     os.chdir("../../ongoing_work")
     logging.info(f"cwd: {os.getcwd()}")
-
     dest_dir = f"{orig_cwd}/../OUTPUT"
+
 
     # =========================================new one 2 no step=========================================
     dest_file = "phasediagram_exact_edge_2.png"
@@ -558,7 +559,7 @@ def main():
     fetch_dir_2 = "OUTPUT/ROMMING_same_beta_2_low_angles_atomistic_angled_vs_comparison_open_heun_1.5_-20.5_-5.875"
     fetch_dir_3 = "OUTPUT/ROMMING_same_beta_high_v_s_atomistic_angled_vs_comparison_open_heun_1.5_-21.5_-3.0"
     fetch_dir = np.array([fetch_dir, fetch_dir_2, fetch_dir_3])
-
+    
     create_phase_diagram_v_s_factor_vs_v_s_angle(fetch_dir=fetch_dir, dest_file=dest_file, dest_dir=dest_dir)
 
 

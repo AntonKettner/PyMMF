@@ -34,10 +34,10 @@ class TestSkyrmionSimulations(ut.TestCase):
                 os.remove(os.path.join("output", file))
 
         cls.sim_types = [
-            # "wall_retention",
+            # "wall_repulsion",
             # # "x_current",
-            # "wall_ret_test_close",
-            # "wall_ret_test_far",
+            # "wall_rep_test_close",
+            # "wall_rep_test_far",
             # "x_current_SkH_test",
             "skyrmion_creation",  # q_r_vs_time plot wrong
             "pinning_tests",

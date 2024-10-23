@@ -15,6 +15,8 @@ if __name__ == "__main__":
     from common_functions import setup_plt_with_tex
 elif __name__ == "analysis.angle_distance_plot":
     from analysis.common_functions import setup_plt_with_tex
+else:
+    from PyMMF.analysis.common_functions import setup_plt_with_tex
 
 def constant_fit(x, y):
     """
@@ -96,13 +98,15 @@ def current_vs_distance_plot(fetch_dir, dest_dir, dest_file="angle_distance_over
     y = traj_q["y0"]
     vsx = traj_q["v_s_x"]
     vsy = traj_q["v_s_y"]
-    logging.info(f"x: {x}")
-    logging.info(f"r: {r}")
-    logging.info(f"last 100 vsx: {vsx[100:]}")
-    logging.info(f"last 100 vsy: {vsy[100:]}")
 
     # filter all elements of traj_q where vsx is 0
     valid_indices = np.where(np.logical_and(vsx != 0, True))[0][2:]  # [0]  # Get the array from the tuple x > 372
+    
+    # find the length of consecutive indices from the back
+    indice_difference = np.diff(valid_indices)
+    no_consecutive_indices = np.where(indice_difference >= 2)
+    valid_indices = valid_indices[no_consecutive_indices]
+
     # valid_indices = valid_indices[3:]
     # if valid_indices.size > 14:
     #     valid_indices = np.concatenate((valid_indices[:-12], [valid_indices[-1]]))  # Remove the last 13 indices but keep the last one
@@ -128,14 +132,6 @@ def current_vs_distance_plot(fetch_dir, dest_dir, dest_file="angle_distance_over
     # # Fit a line to the angle data
     # slope, intercept = np.polyfit(Delta_x, angle, 1)  # 1 is the degree of the polynomial
     # fit_line = slope * Delta_x + intercept
-
-    logging.info(f"x: {x}")
-    logging.info(f"angle: {angle}")
-    logging.info(f"Delta_x: {Delta_x}")
-    logging.info(f"r: {r}")
-    logging.info(f"vsx: {vsx}")
-    logging.info(f"vsy: {vsy}")
-
 
     # q = traj_q["topological_charge"]
     # r = traj_q["r1"]
@@ -236,7 +232,7 @@ def current_vs_distance_plot(fetch_dir, dest_dir, dest_file="angle_distance_over
     # font_title = {"family": "CMU Serif", "size": 15}
     # plt.title(f"Skyrmion Drift due to Edge", fontdict=font_title)
 
-    # # für retention rechts
+    # # für repulsion rechts
     # plt.gca().invert_xaxis()
 
     fig.tight_layout()
@@ -261,9 +257,9 @@ def main():
     os.chdir(os.path.dirname(cwd))
 
     file_name = "traj_q.npy"
-    fetch_folder_name = f"OUTPUT/Thesis_Fig_10_close_wall_ret_test_close"
+    fetch_folder_name = f"OUTPUT/Thesis_Fig_10_close_2_wall_rep_test_close"
 
-    dest_folder = f"OUTPUT/trajectories/angle_distance_plot_left_edge"
+    dest_folder = f"OUTPUT/edge_repulsion"
     if not os.path.exists(dest_folder):
         os.makedirs(dest_folder)
 
