@@ -30,8 +30,8 @@ These classes are all found in the `skyrmion_simulation` dir:
 
 1. Clone the repository:   
 ```shell 
-git clone <Ihr_Repository_URL>
-cd <Ihr_Repository_Verzeichnis>
+git clone github.com/AntonKettner/PyMMF
+cd PyMMF
 ```
 
 2. Install the dependencies: Install the required software versions:
