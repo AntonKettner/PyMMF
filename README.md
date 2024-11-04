@@ -1,122 +1,79 @@
-<!-- # PyMMF: Python Micromagnetic Framework by Anton Kettner
-Version 0.01
-
-Uses PyCUDA to simulate a magnetic surface on an atomic scale iterating over the LLG equation.
-
-Port of AFS SSH repo to Git repo. Currently being tested on Ubuntu 18.04 with:
-
-## Requirements
-- cuda 11.8.0
-- anaconda3/2023.03
-- ffmpeg/4.0.2
-- texlive/2022
-
-## For PhysNet UHH Users
-Skip the installation of requirements (1. in getting started), they are already loaded as modules. Run `bash load_modules_physnet.sh` and afterwards proceed as usual (2. create conda env ...)
-
-for testing use graphix01 node, more info at https://wolke.physnet.uni-hamburg.de/index.php/s/6ZgJfXGixe3z4zx?dir=undefined&openfile=71977770
-
-for longer simulations use i.e. `qsub ss_physnet.sh` -> more info at documentation
-- `bash ss_physnet.sh` starts the skyrmion simulation on testing node with necessary modules (can be used for jobs; configure with your email address and log directory)
-- `bash cc_physnet.sh` starts the current calculation on testing node with necessary modules (can be used for jobs; configure with your email address and log directory)
-
-## Getting Started
-
-1. Install requirements
-2. Create conda environment with necessary repositories (quite a lot) using `conda env create --file conda_env_PyMMF.yml`
-3. Activate enviroment using
-   - `conda init`                # initialize conda
-   - `exec $SHELL`               # restart shell
-   - `conda activate PyMMF_env`  # activate the created env
-5. Run the simulation
-    - Navigate to the script directory with `cd skyrmion_simulation/python_scripts`
-    - execute a test simulation `python skyrmion_simulation.py` via Python
-    - Output is provided via console and into the `OUTPUT` directory
-
-6. Modify masks and Parameters
-    - Modify Simulated area which is defined by a png with white/black pixels. (easily done via paint or similar applications)
-    - Input Skyrmions and masks and in `needed_files` and rerun with your own specifications
-      -> Most parameters can be found inside the class definitions and `__init__` methods in `skyrmion_simulation.py`.
-    - Micromagnetic constants or atomistic exchange energy values for Exchange, DM, Anisotropy, ext. B-field can be set.
-
-For micromagnetic simulation choose -> a as the width/length of a square, 
-Several Standard Modes are Available
-`sim.sim_type` -> The specific parameters modified can be found in the spin class `__init__`.
-
-## Dynamic Current Calculation & Visualization
-
-1. Follow steps 1, 2, and 3 as for Skyrmion Simulation
-2. Run with `python current_calculation.py` after navigating to the directory with `cd current_calculation`.
-
-## To Do (For Me)
-
-- Implement temporary directories cleverly into main calculations:
-    - Skyrmion simulation
-    - Current Calculation
-- Functionalize more of the code inside the analysis scripts (split skyrmion simulation into different parts)
-- Achieve support for Windows (manage paths with `os.path` or a different module) -->
-
 ![PyMMF Logo](assets/PyMMF_logo_0.1.png)
 
-# 🧲 PyMMF: Python Micromagnetic Framework (v1.00)
+# 🧲 PyMMF: Python Micromagnetic Framework by Anton Kettner (v1.00)
 
 > Ein vielseitiges Werkzeug zur Simulation magnetischer Oberflächen auf atomarer Ebene mit Hilfe von PyCUDA.
 
 ## 🚀 Projektübersicht
 
-Das PyMMF (Python Micromagnetic Framework) ist eine experimentelle Plattform zur Simulation magnetischer Oberflächen mithilfe der LLG-Gleichung. Der Code nutzt PyCUDA und wurde von einem AFS SSH Repository in ein Git Repository migriert. Aktuell wird es auf Ubuntu 18.04 getestet.
+PyMMF (Python Micromagnetic Framework) is the Repo I wrote during my Masterthesis to simulate and analyze micromagnetic behavior. The Framework uses PyCUDA to simulate a magnetic surface on an atomic scale iterating over the LLG equation.
 
-## ✨ Hauptmerkmale
+## ✨ Main Features
 
-1. 💻 Atomare Simulation: Simuliert magnetische Oberflächen auf atomarer Ebene.
-2. 🔄 LLG-Integration: Nutzt die Landau-Lifshitz-Gilbert-Gleichung für Simulationen.
-3. 🚀 CUDA-Unterstützung: Beschleunigung mittels CUDA 11.8.0.
-4. 🔧 Anpassen von Parametern: Benutzerspezifische Anpassung von Simulationsparametern und -masken.
+1. 💻 Atomic Simulation: Simulates magnetic surfaces on an atomic scale.
+2. 🔄 LLG-Integration: Uses the Landau-Lifshitz-Gilbert equation for simulations.
+3. 🚀 CUDA-Support: Acceleration via CUDA 11.8.0. -> Kernels written in `kernels` dir
+4. 🔧 Parameter Adjustment: User-specific adjustment of simulation parameters and masks.
 
-## 🏗️ Systemarchitektur
+## 🏗️ System Architecture
 
-Die folgenden Hauptkomponenten steuern die Simulation:
+The main script containing all the functionality (skyrmion_simulation.py) has been split into several classes in different scripts to improve readability and modularity.
+These classes are all found in the `skyrmion_simulation` dir:
+- main.py           : Runs the main simulation loop.
+- constants.py      : Contains all the constants used in the simulation. -> Material/Physical Constants
+- simulation.py     : Contains the important simulation parameters
+- gpu.py            : Contains the GPU related code -> sending/receiving data to/from the GPU, grouping of the numerical steps for different calculation methods. (RK4, heun, Euler)
+- spin_operations.py: Contains all the micromagnetic functions -> setting skyrmions, initializing the spinfield, etc.
+- output.py         : Contains all the output related functions -> saving images, creating movies, etc.
 
-- Simulation Script: Führt die Hauptsimulation durch und bietet verschiedene Einstellmöglichkeiten.
-- Parameter Management: Ermöglicht die Anpassung von Simulationsparametern direkt innerhalb der Skripte.
+## 🚀 First Steps
 
-## 🚀 Erste Schritte
-
-1. Repository klonen:   
+1. Clone the repository:   
 ```shell 
 git clone <Ihr_Repository_URL>
 cd <Ihr_Repository_Verzeichnis>
 ```
 
-2. Installieren der Abhängigkeiten: Benötigte Softwareversionen installieren:
+2. Install the dependencies: Install the required software versions:
    - CUDA 11.8.0
    - Anaconda3/2023.03
    - ffmpeg/4.0.2
    - texlive/2022
 
-3. Erstellen und Aktivieren der Conda-Umgebung:
+3. Create and activate the Conda environment:
 ```shell 
 conda env create --file conda_env_PyMMF.yml
 conda init
 exec $SHELL
 conda activate PyMMF_env
 ```
-   
-4. Simulation ausführen:
-   - Navigieren zur Skript-Direktive: `cd skyrmion_simulation/python_scripts`
-   - Führen Sie eine Testsimulation aus: `python skyrmion_simulation.py`
 
-5. Anpassen von Masken und Parametern:
-   - Ändern Sie die simulierbare Fläche mithilfe von PNG-Bildern.
-   - Skyrmion-Masken in `needed_files` anpassen und neu ausführen.
+4. Run your first simulation:
+```shell
+python skyrmion_simulation/main.py --sim_type "x_current"
+```
 
-## ⚙️ PhysNet UHH Benutzerhinweise
+5. Create your own simulation type:
+5.1. Add a new entry in the list "acceptable_sim_types" in main.py (arg_parser method)
+5.2. Add an elif check for your simulation type in simulation.py in the __init__ method
+What can you change?:
+- use a different mask for the simulated area -> black and white PNG in `needed_files` dir
+- adjust the timeframe of the simulation, the number of images, etc.
+- turn current on/off, adjust the current direction, etc.
+-> Test the main functionality of the codebase by running `python testing/testing_basic.py`
 
-Benutzer von PhysNet UHH können Module direkt laden, indem sie `bash load_modules_physnet.sh` ausführen. Weitere Informationen und Testumgebungen finden Sie hier.
+## You can also recreate all the Files in the Thesis with:
+```shell
+python testing/data_gen_thesis.py
+```
+
+## ⚙️ PhysNet UHH User Instructions
+
+PhysNet UHH users can load modules directly by running `bash load_modules_physnet.sh`. Further information and test environments can be found here.
 
 ## 🔄 Dynamic Current Calculation & Visualization
 
-Folgen Sie den Schritten 1 bis 3, und führen Sie dann die Stromberechnung durch:
+Follow the steps 1 to 3, and then run the current calculation:
 ```shell
 cd current_calculation
 python current_calculation.py
@@ -125,6 +82,13 @@ python current_calculation.py
 
 ## 📋 To Do
 
-- 📂 Implementieren von temporären Verzeichnissen in die Hauptberechnungen.
-- ⚙️ Weitere Funktionsverlagerungen innerhalb der Analyse-Skripte.
-- 🪟 Unterstützung für Windows umsetzen (z.B. mit `os.path`).
+- 📂 Implementing temporary directories into the main calculations.
+- 🪟 Implementing support for Windows (using `os.path`).
+
+## 📺 Examplary output x_current_video
+
+![Examplary output](assets/skyrmion_x_current.gif)
+
+## 📺 Visualization via Unity
+
+![Examplary output](assets/skyrmion_Unity.gif)
