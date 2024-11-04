@@ -4,7 +4,7 @@
 
 > Ein vielseitiges Werkzeug zur Simulation magnetischer Oberflächen auf atomarer Ebene mit Hilfe von PyCUDA.
 
-## 🚀 Projektübersicht
+## 🚀 Project Overview
 
 PyMMF (Python Micromagnetic Framework) is the Repo I wrote during my Masterthesis to simulate and analyze micromagnetic behavior. The Framework uses PyCUDA to simulate a magnetic surface on an atomic scale iterating over the LLG equation.
 
