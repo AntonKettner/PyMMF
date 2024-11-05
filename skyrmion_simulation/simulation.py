@@ -40,7 +40,7 @@ class sim:
     - time_per_img (float)          : Time per image.
     - t_last_skyr_frac (float)      : Fraction of time until all skyrmions are set.
     - save_pics (bool)              : Whether to save pictures.
-    - save_npys (bool)              : Whether to save numpy arrays.
+    - save_db (bool)                : Whether to save SQL databases.
     - save_npy_end (bool)           : Whether to save numpy arrays at the end.
     - track_radius (bool)           : Whether to track the radius.
     - check_variance (bool)         : Whether to check the variance.
@@ -85,7 +85,7 @@ class sim:
     cc_steps                = 600000
     t_last_skyr_frac        = 1
     save_pics               = True
-    save_npys               = False
+    save_db               = False
     save_npy_end            = True
     track_radius            = True
     check_variance          = True

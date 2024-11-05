@@ -343,7 +343,7 @@ def run_simulation(sim_no, angle, v_s_fac):
                 op.save_image(custom_relaxed_spins_z, pic_dir)
 
                 # SAVE THE NPY FILE IF WANTED
-                if sim.save_npys:
+                if sim.save_db:
                     npy_output_dir = f"{sample_dir}/data/Spins_at_t_{t - sim.t_pics[0] + sim.dt:011.6f}.npy"
                     np.save(npy_output_dir, relaxed_spins.astype(np.float16))
 
@@ -380,7 +380,7 @@ def run_simulation(sim_no, angle, v_s_fac):
             op.save_image(custom_view_spins_z, pic_dir)
 
             # SAVE THE NPY FILE IF WANTED
-            if sim.save_npys:
+            if sim.save_db:
                 npy_output_dir = f"{sample_dir}/data/Spins_at_t_{t:011.6f}.npy"
                 np.save(npy_output_dir, GPU.spins_evolved.astype(np.float16))
 
@@ -922,7 +922,7 @@ def main(sim_type="x_current"):
         os.makedirs(sample_dir)
 
         # create the folder for npy files if necessary
-        os.makedirs(f"{sample_dir}/data") if sim.save_npys else None
+        os.makedirs(f"{sample_dir}/data") if sim.save_db else None
 
         # save skyrmion image
         skyr_pic_dir = f"{sample_dir}/skyrmion_direction.png"

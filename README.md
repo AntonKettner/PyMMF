@@ -1,6 +1,6 @@
 ![PyMMF Logo](assets/PyMMF_logo_0.2.png)
 
-# 🧲 PyMMF: Python Micromagnetic Framework by Anton Kettner (v1.00)
+# 🧲 PyMMF: Python Micromagnetic Framework by Anton Kettner (v1.10)
 
 ## 🚀 Project Overview
 
@@ -79,6 +79,15 @@ cd current_calculation
 python current_calculation.py
 ```
 
+## 🎥 Visualization via Unity
+
+-Follow the steps 1 to 3, set save_db flag to True in simulation.py and run a simulation.
+
+-Run the spin_movement_visualization_via_Unity.py script in the analysis dir adjusting the fetch_dir to the sample_dir of your simulation. --> a new dir "databases" will be created in the sample_dir containing spin configurations stored in SQLite database files
+
+-copy these to a custom dir in the Unity project Assets/StreamingAssets/Databases and change the relativePath vars in Assets/Skyr_data_loader.cs and Spin_Visualizer.cs to the path of your custom dir.
+
+--> Enjoy the show!
 
 ## 📋 To Do
 

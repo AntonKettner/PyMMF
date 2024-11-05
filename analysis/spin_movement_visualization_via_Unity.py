@@ -42,19 +42,19 @@ def find_skyr_center(m_z, idx):
 
 
 if __name__ == "__main__":
-    # folder_name = "results_wall_retention_2_rk4_1.5_B_ext"
-    folder_name = "OUTPUT/x_current_x_current/sample_1_0_deg_1_v_s_fac"
+    # fetch_dir = "results_wall_retention_2_rk4_1.5_B_ext"
+    fetch_dir = "OUTPUT/x_current_x_current/sample_1_0_deg_1_v_s_fac"
 
-    # dest_folder = "OUTPUT/results_final_atomistic_skyrmion_creation_2.5_r_open_heun_1.5_0.5_0/sample_1_0_deg_0.5_v_s_fac/json_data"
-    # dest_folder = "energy_wall_collision_1/3_Skyr_vert_curr/e_plot_comp_vs_100/json_data"
-    dest_folder = os.path.join(folder_name, "json_data_2")
+    # dest_dir = "OUTPUT/results_final_atomistic_skyrmion_creation_2.5_r_open_heun_1.5_0.5_0/sample_1_0_deg_0.5_v_s_fac/json_data"
+    # dest_dir = "energy_wall_collision_1/3_Skyr_vert_curr/e_plot_comp_vs_100/json_data"
+    dest_dir = os.path.join(fetch_dir, "databases")
     # background = np.load("needed_files/background.npy")[:, :, 2]
 
-    # löschen von dest_folder, falls es existiert
-    if os.path.exists(dest_folder):
-        shutil.rmtree(dest_folder)
+    # löschen von dest_dir, falls es existiert
+    if os.path.exists(dest_dir):
+        shutil.rmtree(dest_dir)
 
-    os.makedirs(f"{dest_folder}")
+    os.makedirs(f"{dest_dir}")
 
     x_min_list = []
 
@@ -71,12 +71,10 @@ if __name__ == "__main__":
 
     radius = 13
 
-    # --------------------------------------- json calc Section---------------------------------------
+    # search for a racetrack.png file in the dir and subdirs
+    dir_path = fetch_dir
 
-    # search for a racetrack.png file in the folder and subfolders
-    folder_path = folder_name
-
-    mask_pattern = os.path.join(folder_path, "**", "racetrack.png")
+    mask_pattern = os.path.join(dir_path, "**", "racetrack.png")
 
     mask_path = glob.glob(mask_pattern, recursive=True)[0]
 
@@ -88,7 +86,7 @@ if __name__ == "__main__":
 
     print(mask.shape)
 
-    npy_paths_pattern = os.path.join(folder_path, "**", "Spins_at_t_*.npy")
+    npy_paths_pattern = os.path.join(dir_path, "**", "Spins_at_t_*.npy")
 
     npy_paths = list(glob.iglob(npy_paths_pattern, recursive=True))
     print(npy_paths[0])
@@ -96,11 +94,11 @@ if __name__ == "__main__":
     print(npy_paths[2])
     print(npy_paths[3])
 
-    with tqdm(total=len(npy_paths), desc="Calc. jsons", unit=f"spinfield") as pbar:
+    with tqdm(total=len(npy_paths), desc="Calc. databases", unit=f"spinfield") as pbar:
         for index, filepath in enumerate(npy_paths):
             # ---------------------------------------------------------------Mandaroty: loading spinfield, getting ||-------------------------------------------------------------------
 
-            # spinfield = np.load(f"{folder_name}/{filename}", allow_pickle=True)[2:-2, 2:-2, :]
+            # spinfield = np.load(f"{fetch_dir}/{filename}", allow_pickle=True)[2:-2, 2:-2, :]
             spinfield = np.load(filepath, allow_pickle=True)
             print(spinfield.shape) if index == 0 else None
             # spinfield_value = np.linalg.norm(spinfield, axis=-1)
@@ -134,7 +132,7 @@ if __name__ == "__main__":
             ]
 
             # -----------------------------------------------------------------------------------------------------------------------------------------
-            # ---------------------------------------------------------------json calc Section---------------------------------------------------------
+            # ---------------------------------------------------------------SQL calc Section---------------------------------------------------------
             # -----------------------------------------------------------------------------------------------------------------------------------------
 
             x_values, y_values = np.meshgrid(np.arange(spinfield.shape[1]), np.arange(spinfield.shape[0]))
@@ -182,7 +180,7 @@ if __name__ == "__main__":
             y_Rot = -azimuthal_angle + 90
 
 
-            db_path = os.path.join(dest_folder, f"spinfield_{index}.db")
+            db_path = os.path.join(dest_dir, f"spinfield_{index}.db")
             conn = sqlite3.connect(db_path)
             cursor = conn.cursor()
 
