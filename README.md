@@ -1,4 +1,4 @@
-![PyMMF Logo](assets/PyMMF_logo_0.1.png)
+![PyMMF Logo](assets/PyMMF_logo_0.2.png)
 
 # 🧲 PyMMF: Python Micromagnetic Framework by Anton Kettner (v1.00)
 
