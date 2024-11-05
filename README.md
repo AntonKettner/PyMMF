@@ -1,12 +1,12 @@
-![PyMMF Logo](assets/PyMMF_logo_0.1.png)
+![PyMMF Logo](assets/PyMMF_logo_0.2.png)
 
 # 🧲 PyMMF: Python Micromagnetic Framework by Anton Kettner (v1.00)
 
-> Ein vielseitiges Werkzeug zur Simulation magnetischer Oberflächen auf atomarer Ebene mit Hilfe von PyCUDA.
-
-## 🚀 Projektübersicht
+## 🚀 Project Overview
 
 PyMMF (Python Micromagnetic Framework) is the Repo I wrote during my Masterthesis to simulate and analyze micromagnetic behavior. The Framework uses PyCUDA to simulate a magnetic surface on an atomic scale iterating over the LLG equation.
+
+For a more interactive visualization I did a little Unity C# project: https://github.com/AntonKettner/spin_visualization_unity
 
 ## ✨ Main Features
 
@@ -30,8 +30,8 @@ These classes are all found in the `skyrmion_simulation` dir:
 
 1. Clone the repository:   
 ```shell 
-git clone <Ihr_Repository_URL>
-cd <Ihr_Repository_Verzeichnis>
+git clone github.com/AntonKettner/PyMMF
+cd PyMMF
 ```
 
 2. Install the dependencies: Install the required software versions:
@@ -88,7 +88,3 @@ python current_calculation.py
 ## 📺 Examplary output x_current_video
 
 ![Examplary output](assets/skyrmion_x_current.gif)
-
-## 📺 Visualization via Unity
-
-![Examplary output](assets/skyrmion_Unity.gif)
