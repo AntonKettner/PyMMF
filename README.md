@@ -6,6 +6,8 @@
 
 PyMMF (Python Micromagnetic Framework) is the Repo I wrote during my Masterthesis to simulate and analyze micromagnetic behavior. The Framework uses PyCUDA to simulate a magnetic surface on an atomic scale iterating over the LLG equation.
 
+For a more interactive visualization I did a little Unity C# project: https://github.com/AntonKettner/spin_visualization_unity
+
 ## ✨ Main Features
 
 1. 💻 Atomic Simulation: Simulates magnetic surfaces on an atomic scale.
@@ -86,7 +88,3 @@ python current_calculation.py
 ## 📺 Examplary output x_current_video
 
 ![Examplary output](assets/skyrmion_x_current.gif)
-
-## 📺 Visualization via Unity
-
-![Examplary output](assets/skyrmion_Unity.gif)
