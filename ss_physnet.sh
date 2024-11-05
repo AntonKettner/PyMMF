@@ -1,5 +1,3 @@
-# The #$ -lines are called "flags" and are used to specify the job setup
-
 # Forces the shell to use bash as the interpreter
 #$ -S /bin/bash
 
@@ -24,10 +22,6 @@
 # Dir of the joblog file
 #$ -o $HOME/job_logs
 
-# Determines an e-mail address to send job information to.
-# The options after -m control the cases in which to send a e-mail (b=begin, e=end, a=abort, s=suspend)
-#$ -M akettner@physnet.uni-hamburg.de -m as
-
 # Request a parallel environment (PE) with a certain number of CPU slots.
 # REMOVE THIS FOR SINGLE THREAD JOBS!
 # Available PEs are: mpi (for treads across as few nodes as possible) or smp (for threads on the same node).
@@ -38,7 +32,7 @@ module load anaconda3/2023.03
 module load texlive/2022
 module load ffmpeg/4.0.2
 module load cuda/11.8.0
-conda activate PyMMF_env
+conda activate PyMMF_env_light
 echo -e "all modules purged, anaconda loaded, Anaconda Enviroment $(conda info --envs | grep "*" | cut -d " " -f 1) activated"
 echo "current directory:"
 echo $PWD
@@ -52,5 +46,5 @@ nvcc --version
 echo "Python version:"
 python --version
 echo -e "\033[1;32m start \033[0m"
-python skyrmion_simulation/python_scripts/skyrmion_simulation.py --sim_type "x_current"
+python skyrmion_simulation/main.py --sim_type "x_current"
 echo -e "\033[1;36m fertig \033[0m"

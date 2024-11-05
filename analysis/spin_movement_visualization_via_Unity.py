@@ -1,4 +1,5 @@
 import json
+import sqlite3
 import numpy as np
 import os
 import shutil
@@ -6,6 +7,7 @@ from PIL import Image
 from tqdm import tqdm
 import glob
 import logging
+import gzip
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
@@ -41,7 +43,7 @@ def find_skyr_center(m_z, idx):
 
 if __name__ == "__main__":
     # folder_name = "results_wall_retention_2_rk4_1.5_B_ext"
-    folder_name = "OUTPUT/test_until_ROMMING_FINAL_SIMatomistic_first_results_replica_2.5_r_open_heun_1.5_6_0/sample_1_0_deg_6_v_s_fac"
+    folder_name = "OUTPUT/x_current_x_current/sample_1_0_deg_1_v_s_fac"
 
     # dest_folder = "OUTPUT/results_final_atomistic_skyrmion_creation_2.5_r_open_heun_1.5_0.5_0/sample_1_0_deg_0.5_v_s_fac/json_data"
     # dest_folder = "energy_wall_collision_1/3_Skyr_vert_curr/e_plot_comp_vs_100/json_data"
@@ -160,9 +162,17 @@ if __name__ == "__main__":
 
             # definition of the polar and azimuthal angles in radians; polar_angle from 0 to 180, azimuthal_angle from 0 to 360
             polar_angle = np.arccos(w) * 180 / np.pi
-            azimuthal_angle = (np.sign(v) * np.arccos(u / np.sqrt(u**2 + v**2))) * 180 / np.pi
+            # calculate denominator first
+            denom = np.sqrt(u**2 + v**2)
 
-            azimuthal_angle = np.nan_to_num(azimuthal_angle, nan=0)
+            # where denominator is 0, set to 1e-8 to avoid division by zero
+            denom[denom == 0] = 1e-8
+
+            # Calculate azimuthal angle, handling edge cases
+            azimuthal_angle = np.zeros_like(u)
+            valid_mask = denom > 1e-8
+            azimuthal_angle[valid_mask] = (np.sign(v[valid_mask]) * 
+                                         np.arccos(np.clip(u[valid_mask] / denom[valid_mask], -1, 1))) * 180 / np.pi
 
             # # test for correct conversion of x, y coordinate
             # polar_angle[11,6] = 2
@@ -171,19 +181,59 @@ if __name__ == "__main__":
             x_Rot = polar_angle - 90
             y_Rot = -azimuthal_angle + 90
 
-            # as conversion into unity rotations --> left handed coordinate system --> y and z are switched
-            data = {
-                "x": x,
-                "z": y,
-                "y": z,
-                "x_Rot": x_Rot.flatten().tolist(),
-                "y_Rot": y_Rot.flatten().tolist(),
-                "scalefactor": scalefactor.flatten().tolist(),
-            }
 
-            # Save as JSON
-            with open(f"{dest_folder}/spinfield_{index}.json", "w") as f:
-                json.dump(data, f)
+            db_path = os.path.join(dest_folder, f"spinfield_{index}.db")
+            conn = sqlite3.connect(db_path)
+            cursor = conn.cursor()
+
+            # Create table without any special settings
+            cursor.execute('''
+            CREATE TABLE IF NOT EXISTS spinfields(
+                frame_id INTEGER PRIMARY KEY,
+                x_coords BLOB,
+                z_coords BLOB,
+                y_coords BLOB,
+                x_rot BLOB,
+                y_rot BLOB,
+                scalefactor BLOB
+            )
+            ''')
+            
+            # Compress arrays before storage
+            def compress_data(data):
+                json_str = json.dumps(data).encode('utf-8')
+                compressed = gzip.compress(json_str)[2:]  # Remove gzip header
+                return compressed
+            
+            data_tuple = (
+                index,
+                compress_data(x),
+                compress_data(y),
+                compress_data(z),
+                compress_data(x_Rot.flatten().tolist()),
+                compress_data(y_Rot.flatten().tolist()),
+                compress_data(scalefactor.flatten().tolist())
+            )
+
+            # Debug prints
+            print("\nData types in data_tuple:")
+            for i, item in enumerate(data_tuple):
+                print(f"Item {i}: {type(item)}")
+                if hasattr(item, 'shape'):
+                    print(f"Shape: {item.shape}")
+                if isinstance(item, list):
+                    print(f"Length: {len(item)}")
+                    if len(item) > 0:
+                        print(f"First element type: {type(item[0])}")
+
+            cursor.execute('''
+            INSERT INTO spinfields VALUES (?, ?, ?, ?, ?, ?, ?)
+            ''', data_tuple)
+
+            conn.commit()
+
+            # Don't forget to close at the end:
+            conn.close()
 
             postfix_dict = {
                 "polar-min": np.min(polar_angle).round(2),
@@ -191,7 +241,7 @@ if __name__ == "__main__":
                 "azimuth-min": np.min(azimuthal_angle).round(2),
                 "azimuth-Max": np.max(azimuthal_angle).round(2),
                 "scalefactor-min": np.min(scalefactor).round(2),
-                "scalefactor-Max": np.max(scalefactor).round(2),
+                "scalefactor-Max": np.max(scalefactor).round(2)
             }
             pbar.set_postfix(postfix_dict)
 

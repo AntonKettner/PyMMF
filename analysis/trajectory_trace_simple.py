@@ -48,10 +48,14 @@ def trajectory_trace(
         
     if isinstance(fetch_dirs, str):
         fetch_dirs = [fetch_dirs]
+    
+    fetch_dirs.append(fetch_folder_name)
 
     len_fetch_dirs = len(fetch_dirs)
 
     logging.info(f"len_fetch_dirs: {len_fetch_dirs}")
+
+    no_traj_q_files = 0
 
     for index, fetch_dir in enumerate(fetch_dirs):
 
@@ -65,14 +69,28 @@ def trajectory_trace(
 
         amount_of_traj_q_files = len(traj_q_file)
 
-        # error catching
-        if amount_of_traj_q_files != 1:
-            logging.error("There should be exactly one traj_q.npy file.")
-            if amount_of_traj_q_files == 0:
-                logging.error("No traj_q.npy file was found.")
-            elif amount_of_traj_q_files > 1:
-                logging.error(f"{amount_of_traj_q_files} traj_q.npy files were found.")
-            exit()
+        no_traj_q_files += amount_of_traj_q_files
+
+        if amount_of_traj_q_files == 0:
+            logging.info(f"index: {index}")
+            logging.warning(f"No traj_q.npy file was found in dir {fetch_dir}.")
+            if index == len_fetch_dirs - 1:
+                logging.info(f"index: {index}")
+                logging.error(f"No '{filename}' file was found in any of the subdirs of {fetch_folder_name}.")
+            continue
+        if amount_of_traj_q_files > 1:
+            logging.error(f"There are {amount_of_traj_q_files} traj_q.npy files in dir {fetch_dir}\n\
+                            totalling to {no_traj_q_files} '{filename}' files in all subdirs.")
+            # continue
+
+        # # error catching
+        # if amount_of_traj_q_files != 1:
+        #     logging.error(f"There should be exactly one traj_q.npy file in dir {fetch_dir} and subdirs.")
+        #     if amount_of_traj_q_files == 0:
+        #         logging.error("No traj_q.npy file was found.")
+        #     elif amount_of_traj_q_files > 1:
+        #         logging.error(f"{amount_of_traj_q_files} traj_q.npy files were found.")
+        #     exit()
 
         # # fetch the v_s_sample_fac from fetch_dir_name
         # fetch_dir_parts = fetch_dir.split("_")
