@@ -6,7 +6,7 @@
 
 PyMMF (Python Micromagnetic Framework) is the Repo I wrote during my Masterthesis to simulate and analyze micromagnetic behavior. The Framework uses PyCUDA to simulate a magnetic surface on an atomic scale iterating over the LLG equation.
 
-For a more interactive visualization I did a little Unity C# project: https://github.com/AntonKettner/spin_visualization_unity
+For a more interactive visualization I did a little Unity C# project: https://github.com/AntonKettner/UnityVectorfieldVisualizer
 
 ## ✨ Main Features
 
@@ -81,11 +81,13 @@ python current_calculation.py
 
 ## 🎥 Visualization via Unity
 
+Basic Instructions are found at https://github.com/AntonKettner/UnityVectorfieldVisualizer. To visualize data created with this repo:
+
 -Follow the steps 1 to 3, set save_db flag to True in simulation.py and run a simulation.
 
 -Run the spin_movement_visualization_via_Unity.py script in the analysis dir adjusting the fetch_dir to the sample_dir of your simulation. --> a new dir "databases" will be created in the sample_dir containing spin configurations stored in SQLite database files
 
--copy these to a custom dir in the Unity project Assets/StreamingAssets/Databases and change the relativePath vars in Assets/Skyr_data_loader.cs and Spin_Visualizer.cs to the path of your custom dir.
+-copy these to a custom dir in:  `your_unity_project_dirAssets/StreamingAssets/Databases` and change the relativePath vars in Assets/Skyr_data_loader.cs and Spin_Visualizer.cs to the path of your custom dir.
 
 --> Enjoy the show!
 
