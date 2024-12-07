@@ -88,7 +88,10 @@ if __name__ == "__main__":
 
     npy_paths_pattern = os.path.join(dir_path, "**", "Spins_at_t_*.npy")
 
+    # glob and sort paths
     npy_paths = list(glob.iglob(npy_paths_pattern, recursive=True))
+    npy_paths.sort()
+    
     print(npy_paths[0])
     print(npy_paths[1])
     print(npy_paths[2])
