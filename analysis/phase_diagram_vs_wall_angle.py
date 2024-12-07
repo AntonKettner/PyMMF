@@ -108,7 +108,7 @@ def create_plot_with_boundaries(datapoints, isatomicstep, dest_boundary_dir, plo
 
         separation_areas = [
             [
-        ["repelled_back"], 
+        ["repelled_back"],
         ["stays_wall"],
             ],
             [
@@ -157,13 +157,8 @@ def create_plot_with_boundaries(datapoints, isatomicstep, dest_boundary_dir, plo
         # x_lim_low = np.min()
         lims = np.array([[None, None], [None, None]])
         
-        # Train SVM
-        if index == 0:
-            clf = svm.SVC(kernel="rbf", C=1e6)
-        elif index == 1:
-            clf = svm.SVC(kernel="rbf", C=1e6)
-        elif index == 2:
-            clf = svm.SVC(kernel="rbf", C=1e6)
+        # Train SVM via Support Vector Classification (SVC)
+        clf = svm.SVC(kernel="rbf", C=1e6)
         clf.fit(data, labels)
         
         # Visualization
